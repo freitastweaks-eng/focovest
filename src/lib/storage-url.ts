@@ -21,6 +21,8 @@ const EXT_BY_TYPE: Record<string, string> = {
   "image/webp": "webp",
 };
 
+const STORAGE_PATH_PATTERN = /^[^/]+\/.+\.(gif|jpe?g|pdf|png|webp)$/i;
+
 export function validateSharedUpload(file: File) {
   if (file.size > MAX_UPLOAD_BYTES) {
     throw new Error("Arquivo maximo: 10 MB");
@@ -56,14 +58,18 @@ export function extractStoragePath(
   bucket: string,
   value: string | null | undefined,
 ): string | null {
-  if (!value) return null;
+  const trimmed = value?.trim();
+  if (!trimmed) return null;
   // Already a relative path
-  if (!/^https?:\/\//i.test(value)) return value;
+  if (!/^https?:\/\//i.test(trimmed)) {
+    return STORAGE_PATH_PATTERN.test(trimmed) ? trimmed : null;
+  }
   // Legacy public URL: .../storage/v1/object/public/community-files/<path>
   const marker = `/${bucket}/`;
-  const idx = value.indexOf(marker);
+  const idx = trimmed.indexOf(marker);
   if (idx === -1) return null;
-  return value.slice(idx + marker.length);
+  const path = trimmed.slice(idx + marker.length);
+  return STORAGE_PATH_PATTERN.test(path) ? path : null;
 }
 
 /**

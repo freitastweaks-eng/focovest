@@ -12,11 +12,12 @@ function isImageAvatar(value: string) {
 }
 
 export function UserAvatar({ avatar, name, className }: UserAvatarProps) {
-  const signedUrl = useCommunityFileUrl(avatar);
   const value = avatar?.trim();
+  const imageAvatar = value ? isImageAvatar(value) : false;
+  const signedUrl = useCommunityFileUrl(imageAvatar ? value : null);
   const label = name?.trim() || "Usuario";
 
-  if (value && isImageAvatar(value)) {
+  if (value && imageAvatar) {
     return (
       <img
         src={value.startsWith("http") ? value : signedUrl || ""}
