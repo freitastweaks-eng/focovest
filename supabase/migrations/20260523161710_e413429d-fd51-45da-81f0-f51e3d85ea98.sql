@@ -1,0 +1,1 @@
+DROP POLICY IF EXISTS "Community files: public read" ON storage.objects;
