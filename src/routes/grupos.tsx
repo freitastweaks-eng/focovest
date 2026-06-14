@@ -4,7 +4,6 @@ import { motion, AnimatePresence } from "motion/react";
 import {
   Users,
   Lock,
-  Sparkles,
   Plus,
   Send,
   FileText,
@@ -13,10 +12,11 @@ import {
   LogOut,
   Trash2,
   Crown,
-  Check,
   X,
+  Globe2,
+  Share2,
 } from "lucide-react";
-import { hasGroupAccess, isSubscriptionActive, type Subscription } from "@/lib/subscription";
+import type { Subscription } from "@/lib/subscription";
 import { toast } from "sonner";
 import { PageContainer, PageHeader } from "@/components/page";
 
@@ -77,6 +77,7 @@ type Group = {
   description: string | null;
   subject: string | null;
   emoji: string;
+  visibility: "public" | "private";
   created_at: string;
 };
 
@@ -121,15 +122,11 @@ type GEvent = {
 };
 
 function GruposPage() {
-  const { user, profile, subscription, loading } = useAuth();
-
-  const isPremium = Boolean(
-    subscription && isSubscriptionActive(subscription) && hasGroupAccess(subscription),
-  );
+  const { user, profile, loading } = useAuth();
 
   if (loading) {
     return (
-      <Page title="Grupos de Estudo" subtitle="Verificando assinatura...">
+      <Page title="Grupos de Estudo" subtitle="Carregando grupos...">
         <div className="rounded-2xl border border-border bg-card p-5 text-sm text-muted-foreground">
           Carregando acesso aos grupos.
         </div>
@@ -137,149 +134,7 @@ function GruposPage() {
     );
   }
 
-  if (!isPremium) return <PremiumLock user={user} />;
-
   return <GroupsApp user={user} profile={profile} />;
-}
-
-/* ---------------- PREMIUM LOCK ---------------- */
-
-function PremiumLock({ user }: { user: { id: string; email?: string } | null }) {
-  const [email, setEmail] = useState(user?.email ?? "");
-  const [submitted, setSubmitted] = useState(false);
-  const [loading, setLoading] = useState(false);
-
-  const submit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!email.trim()) return;
-    if (!user?.id) {
-      toast.error("Faça login para entrar na lista.");
-      return;
-    }
-    setLoading(true);
-    const { error } = await supabase
-      .from("premium_waitlist")
-      .insert({ email: email.trim().toLowerCase(), user_id: user.id, source: "groups" });
-    setLoading(false);
-    if (error && !error.message.includes("duplicate")) {
-      toast.error("Não foi possível inscrever. Tente novamente.");
-      return;
-    }
-    setSubmitted(true);
-    toast.success("Você entrou na lista! 🎉");
-  };
-
-  return (
-    <Page title="Grupos de Estudo" subtitle="Em breve no Premium">
-      <div className="relative mx-auto max-w-3xl">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: "easeOut" }}
-          className="relative overflow-hidden rounded-3xl border border-border bg-gradient-to-br from-card via-card to-secondary/40 p-8 md:p-12"
-        >
-          {/* glow */}
-          <div className="pointer-events-none absolute -right-24 -top-24 size-72 rounded-full bg-lime/20 blur-3xl" />
-          <div className="pointer-events-none absolute -bottom-24 -left-24 size-72 rounded-full bg-primary/10 blur-3xl" />
-
-          <div className="relative">
-            <div className="inline-flex items-center gap-2 rounded-full border border-lime/30 bg-lime/10 px-3 py-1 text-xs font-semibold text-lime-foreground">
-              <Crown className="size-3.5 text-lime" />
-              <span className="text-foreground">VestApp Premium</span>
-            </div>
-
-            <h1 className="mt-5 font-display text-3xl font-bold leading-tight md:text-5xl">
-              Estude com seus amigos.
-              <br />
-              <span className="text-lime">Juntos vocês passam.</span>
-            </h1>
-            <p className="mt-4 max-w-xl text-muted-foreground md:text-lg">
-              Crie grupos privados com feed em tempo real, biblioteca compartilhada e calendário
-              coletivo. Em breve, exclusivo para assinantes.
-            </p>
-
-            <div className="mt-8 grid gap-3 md:grid-cols-3">
-              <FeatureCard
-                icon={Send}
-                title="Feed em tempo real"
-                desc="Conversas, dúvidas e revisões juntos."
-              />
-              <FeatureCard
-                icon={FileText}
-                title="Materiais do grupo"
-                desc="PDFs, resumos e imagens compartilhados."
-              />
-              <FeatureCard
-                icon={CalendarDays}
-                title="Agenda coletiva"
-                desc="Marquem revisões e simulados juntos."
-              />
-            </div>
-
-            {!submitted ? (
-              <form onSubmit={submit} className="mt-8 flex flex-col gap-2 sm:flex-row">
-                <Input
-                  type="email"
-                  required
-                  placeholder="seu@email.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="h-12 flex-1 rounded-xl bg-background text-base"
-                />
-                <Button
-                  type="submit"
-                  disabled={loading}
-                  className="h-12 rounded-xl bg-lime px-6 font-semibold text-lime-foreground hover:bg-lime/90"
-                >
-                  <Lock className="mr-1 size-4" />
-                  {loading ? "Entrando..." : "Entrar na lista"}
-                </Button>
-              </form>
-            ) : (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="mt-8 flex items-center gap-3 rounded-xl border border-lime/40 bg-lime/10 px-4 py-3"
-              >
-                <div className="flex size-9 items-center justify-center rounded-full bg-lime text-lime-foreground">
-                  <Check className="size-5" strokeWidth={3} />
-                </div>
-                <div>
-                  <div className="font-display font-semibold">Você está na lista!</div>
-                  <div className="text-xs text-muted-foreground">Avisaremos no lançamento.</div>
-                </div>
-              </motion.div>
-            )}
-
-            <p className="mt-4 text-xs text-muted-foreground">
-              <Sparkles className="mr-1 inline size-3 text-lime" />
-              Membros da waitlist ganham 30 dias grátis.
-            </p>
-          </div>
-        </motion.div>
-      </div>
-    </Page>
-  );
-}
-
-function FeatureCard({
-  icon: Icon,
-  title,
-  desc,
-}: {
-  icon: React.ComponentType<{ className?: string }>;
-  title: string;
-  desc: string;
-}) {
-  return (
-    <div className="rounded-2xl border border-border bg-background/60 p-4 backdrop-blur-sm">
-      <div className="flex size-9 items-center justify-center rounded-xl bg-lime/15 text-lime">
-        <Icon className="size-4" />
-      </div>
-      <div className="mt-3 font-display text-sm font-semibold">{title}</div>
-      <div className="mt-1 text-xs text-muted-foreground">{desc}</div>
-    </div>
-  );
 }
 
 /* ---------------- GROUPS APP (unlocked path) ---------------- */
@@ -295,6 +150,7 @@ function GroupsApp({
   const [myMemberships, setMyMemberships] = useState<Set<string>>(new Set());
   const [active, setActive] = useState<Group | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
+  const [joiningInvite, setJoiningInvite] = useState(false);
 
   const loadAll = useCallback(async () => {
     if (!user) return;
@@ -310,26 +166,76 @@ function GroupsApp({
     loadAll();
   }, [loadAll]);
 
+  useEffect(() => {
+    if (!user || typeof window === "undefined") return;
+
+    const url = new URL(window.location.href);
+    const inviteToken = url.searchParams.get("convite");
+    if (!inviteToken) return;
+
+    url.searchParams.delete("convite");
+    window.history.replaceState({}, "", `${url.pathname}${url.search}${url.hash}`);
+    setJoiningInvite(true);
+
+    void (async () => {
+      try {
+        const { error } = await supabase.rpc("join_study_group_by_invite", {
+          _invite_token: inviteToken,
+        });
+        if (error) {
+          toast.error("Este convite não é válido ou não está mais disponível.");
+          return;
+        }
+        toast.success("Você entrou no grupo privado!");
+        await loadAll();
+      } finally {
+        setJoiningInvite(false);
+      }
+    })();
+  }, [loadAll, user]);
+
   const myGroups = useMemo(
     () => groups.filter((g) => myMemberships.has(g.id)),
     [groups, myMemberships],
   );
   const discover = useMemo(
-    () => groups.filter((g) => !myMemberships.has(g.id)),
+    () => groups.filter((g) => g.visibility === "public" && !myMemberships.has(g.id)),
     [groups, myMemberships],
   );
 
   const join = async (g: Group) => {
-    if (!user || !profile) return;
-    const { error } = await supabase.from("study_group_members").insert({
-      group_id: g.id,
-      user_id: user.id,
-      display_name: profile.display_name,
-      avatar: profile.avatar,
-    });
+    if (!user) return;
+    const { error } = await supabase.rpc("join_public_study_group", { _group_id: g.id });
     if (error) return toast.error("Erro ao entrar");
     toast.success(`Bem-vindo a ${g.name}!`);
     loadAll();
+  };
+
+  const shareInvite = async (g: Group) => {
+    const { data: token, error } = await supabase.rpc("get_study_group_invite_token", {
+      _group_id: g.id,
+    });
+    if (error || !token) {
+      toast.error("Não foi possível gerar o convite.");
+      return;
+    }
+
+    const inviteUrl = `${window.location.origin}/grupos?convite=${encodeURIComponent(token)}`;
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `Convite para ${g.name}`,
+          text: `Entre no meu grupo de estudos ${g.name} no VestApp.`,
+          url: inviteUrl,
+        });
+        return;
+      } catch (shareError) {
+        if (shareError instanceof DOMException && shareError.name === "AbortError") return;
+      }
+    }
+
+    await navigator.clipboard.writeText(inviteUrl);
+    toast.success("Link de convite copiado!");
   };
 
   const leave = async (g: Group) => {
@@ -353,6 +259,11 @@ function GroupsApp({
         </Button>
       }
     >
+      {joiningInvite && (
+        <div className="mb-6 rounded-xl border border-lime/30 bg-lime/10 px-4 py-3 text-sm">
+          Entrando no grupo pelo convite...
+        </div>
+      )}
       {active ? (
         <GroupDetail
           group={active}
@@ -361,6 +272,7 @@ function GroupsApp({
           onBack={() => setActive(null)}
           onLeave={() => leave(active)}
           isOwner={active.owner_id === user?.id}
+          onShareInvite={() => shareInvite(active)}
         />
       ) : (
         <div className="space-y-8">
@@ -396,7 +308,6 @@ function GroupsApp({
         open={createOpen}
         onOpenChange={setCreateOpen}
         user={user}
-        profile={profile}
         onCreated={loadAll}
       />
     </Page>
@@ -438,6 +349,14 @@ function GroupCard({
               {group.subject}
             </Badge>
           )}
+          <Badge variant="outline" className="mt-1 ml-1 text-[10px]">
+            {group.visibility === "public" ? (
+              <Globe2 className="mr-1 size-3" />
+            ) : (
+              <Lock className="mr-1 size-3" />
+            )}
+            {group.visibility === "public" ? "Aberto" : "Privado"}
+          </Badge>
         </div>
       </div>
       {group.description && (
@@ -468,19 +387,18 @@ function CreateGroupDialog({
   open,
   onOpenChange,
   user,
-  profile,
   onCreated,
 }: {
   open: boolean;
   onOpenChange: (o: boolean) => void;
   user: { id: string } | null;
-  profile: { display_name: string; avatar: string } | null;
   onCreated: () => void;
 }) {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [subject, setSubject] = useState("");
   const [emoji, setEmoji] = useState("📚");
+  const [visibility, setVisibility] = useState<"public" | "private">("public");
   const [loading, setLoading] = useState(false);
 
   const reset = () => {
@@ -488,33 +406,23 @@ function CreateGroupDialog({
     setDescription("");
     setSubject("");
     setEmoji("📚");
+    setVisibility("public");
   };
 
   const submit = async () => {
-    if (!user || !profile || !name.trim()) return;
+    if (!user || !name.trim()) return;
     setLoading(true);
-    const { data, error } = await supabase
-      .from("study_groups")
-      .insert({
-        owner_id: user.id,
-        name: name.trim(),
-        description: description.trim() || null,
-        subject: subject || null,
-        emoji,
-      })
-      .select()
-      .single();
-    if (error || !data) {
+    const { error } = await supabase.rpc("create_study_group", {
+      _name: name.trim(),
+      _description: description.trim() || null,
+      _subject: subject.trim() || null,
+      _emoji: emoji,
+      _visibility: visibility,
+    });
+    if (error) {
       setLoading(false);
       return toast.error("Erro ao criar grupo");
     }
-    await supabase.from("study_group_members").insert({
-      group_id: data.id,
-      user_id: user.id,
-      role: "owner",
-      display_name: profile.display_name,
-      avatar: profile.avatar,
-    });
     setLoading(false);
     toast.success("Grupo criado! 🎉");
     reset();
@@ -556,6 +464,7 @@ function CreateGroupDialog({
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Ex: Vestibulandos 2026"
+              maxLength={80}
             />
           </div>
           <div>
@@ -576,6 +485,45 @@ function CreateGroupDialog({
               placeholder="Sobre o que esse grupo trata?"
               rows={3}
             />
+          </div>
+          <div>
+            <label className="text-xs font-semibold text-muted-foreground">Visibilidade</label>
+            <div className="mt-2 grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => setVisibility("public")}
+                className={cn(
+                  "rounded-xl border p-3 text-left transition-colors",
+                  visibility === "public"
+                    ? "border-lime bg-lime/10"
+                    : "border-border bg-secondary/40 hover:bg-secondary",
+                )}
+              >
+                <span className="flex items-center gap-2 text-sm font-semibold">
+                  <Globe2 className="size-4" /> Aberto
+                </span>
+                <span className="mt-1 block text-xs text-muted-foreground">
+                  Aparece em Descobrir e qualquer pessoa pode entrar.
+                </span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setVisibility("private")}
+                className={cn(
+                  "rounded-xl border p-3 text-left transition-colors",
+                  visibility === "private"
+                    ? "border-lime bg-lime/10"
+                    : "border-border bg-secondary/40 hover:bg-secondary",
+                )}
+              >
+                <span className="flex items-center gap-2 text-sm font-semibold">
+                  <Lock className="size-4" /> Privado
+                </span>
+                <span className="mt-1 block text-xs text-muted-foreground">
+                  Somente pessoas com o link de convite podem entrar.
+                </span>
+              </button>
+            </div>
           </div>
         </div>
         <DialogFooter>
@@ -604,6 +552,7 @@ function GroupDetail({
   onBack,
   onLeave,
   isOwner,
+  onShareInvite,
 }: {
   group: Group;
   user: { id: string };
@@ -611,6 +560,7 @@ function GroupDetail({
   onBack: () => void;
   onLeave: () => void;
   isOwner: boolean;
+  onShareInvite: () => void;
 }) {
   const [members, setMembers] = useState<Member[]>([]);
   const [posts, setPosts] = useState<Post[]>([]);
@@ -718,11 +668,15 @@ function GroupDetail({
             </div>
           </div>
         </div>
-        {!isOwner && (
+        {isOwner && group.visibility === "private" ? (
+          <Button variant="outline" size="sm" onClick={onShareInvite} className="rounded-xl">
+            <Share2 className="size-3.5" /> Compartilhar convite
+          </Button>
+        ) : !isOwner ? (
           <Button variant="outline" size="sm" onClick={onLeave} className="rounded-xl">
             <LogOut className="size-3.5" /> Sair
           </Button>
-        )}
+        ) : null}
       </div>
 
       <Tabs defaultValue="feed">

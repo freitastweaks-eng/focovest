@@ -668,6 +668,32 @@ export type Database = {
           },
         ];
       };
+      study_group_invites: {
+        Row: {
+          created_at: string;
+          group_id: string;
+          invite_token: string;
+        };
+        Insert: {
+          created_at?: string;
+          group_id: string;
+          invite_token?: string;
+        };
+        Update: {
+          created_at?: string;
+          group_id?: string;
+          invite_token?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "study_group_invites_group_id_fkey";
+            columns: ["group_id"];
+            isOneToOne: true;
+            referencedRelation: "study_groups";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       study_group_members: {
         Row: {
           avatar: string;
@@ -751,6 +777,7 @@ export type Database = {
           owner_id: string;
           subject: string | null;
           updated_at: string;
+          visibility: string;
         };
         Insert: {
           created_at?: string;
@@ -761,6 +788,7 @@ export type Database = {
           owner_id: string;
           subject?: string | null;
           updated_at?: string;
+          visibility?: string;
         };
         Update: {
           created_at?: string;
@@ -771,6 +799,7 @@ export type Database = {
           owner_id?: string;
           subject?: string | null;
           updated_at?: string;
+          visibility?: string;
         };
         Relationships: [];
       };
@@ -874,6 +903,16 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      create_study_group: {
+        Args: {
+          _description?: string | null;
+          _emoji?: string;
+          _name: string;
+          _subject?: string | null;
+          _visibility?: string;
+        };
+        Returns: string;
+      };
       get_simulado_aggregate: {
         Args: { _simulado_id: string };
         Returns: {
@@ -893,6 +932,18 @@ export type Database = {
       is_group_owner: {
         Args: { _group_id: string; _user_id: string };
         Returns: boolean;
+      };
+      get_study_group_invite_token: {
+        Args: { _group_id: string };
+        Returns: string;
+      };
+      join_public_study_group: {
+        Args: { _group_id: string };
+        Returns: string;
+      };
+      join_study_group_by_invite: {
+        Args: { _invite_token: string };
+        Returns: string;
       };
     };
     Enums: {
