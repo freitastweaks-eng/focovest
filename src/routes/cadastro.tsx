@@ -125,8 +125,8 @@ function CadastroPage() {
         extraTop={
           <>
             <div className="mt-6 flex gap-3 rounded-xl border border-lime/25 bg-lime/10 p-4 text-sm text-muted-foreground">
-            <MailCheck className="mt-0.5 size-5 shrink-0 text-lime" />
-            <p>Abra o link recebido para ativar sua conta. Verifique também a caixa de spam.</p>
+              <MailCheck className="mt-0.5 size-5 shrink-0 text-lime" />
+              <p>Abra o link recebido para ativar sua conta. Verifique também a caixa de spam.</p>
             </div>
             <div className="mt-3">
               <LaunchNotice />

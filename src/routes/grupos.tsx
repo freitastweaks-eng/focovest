@@ -19,6 +19,7 @@ import {
 import type { Subscription } from "@/lib/subscription";
 import { toast } from "sonner";
 import { PageContainer, PageHeader } from "@/components/page";
+import { UserAvatar } from "@/components/user-avatar";
 
 function Page({
   title,
@@ -718,7 +719,11 @@ function GroupDetail({
                 className="rounded-2xl border border-border bg-card p-4"
               >
                 <div className="flex items-start gap-3">
-                  <span className="text-xl">{p.author_avatar}</span>
+                  <UserAvatar
+                    avatar={p.user_id === user.id ? profile.avatar : p.author_avatar}
+                    name={p.author_name}
+                    className="size-10 shrink-0 text-xl"
+                  />
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center justify-between">
                       <div className="font-display text-sm font-semibold">{p.author_name}</div>
@@ -764,7 +769,11 @@ function GroupDetail({
                 key={m.user_id}
                 className="flex items-center gap-3 rounded-xl border border-border bg-card p-3"
               >
-                <span className="text-xl">{m.avatar}</span>
+                <UserAvatar
+                  avatar={m.user_id === user.id ? profile.avatar : m.avatar}
+                  name={m.display_name}
+                  className="size-10 shrink-0 text-xl"
+                />
                 <div className="text-sm font-medium">{m.display_name || "Estudante"}</div>
                 {m.user_id === group.owner_id && <Crown className="ml-auto size-3.5 text-lime" />}
               </div>

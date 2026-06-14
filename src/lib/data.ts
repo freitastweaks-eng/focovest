@@ -14,7 +14,28 @@ export const SUBJECTS = [
   "Sociologia",
 ] as const;
 
-export const VESTIBULARES = ["ENEM", "FUVEST", "UNICAMP", "UNESP", "Vunesp", "Mackenzie"] as const;
+export const VESTIBULARES = [
+  "ENEM",
+  "FUVEST",
+  "UNICAMP",
+  "UNESP",
+  "ITA",
+  "IME",
+  "AFA",
+  "EsPCEx",
+  "UERJ",
+  "UFPR",
+  "UFRGS",
+  "UnB",
+  "PUC-SP",
+  "PUC-Rio",
+  "Mackenzie",
+  "Albert Einstein",
+  "UNIFESP",
+  "FAMERP",
+  "FAMEMA",
+  "Outro",
+] as const;
 
 export type Difficulty = "Fácil" | "Médio" | "Difícil";
 
@@ -407,6 +428,163 @@ Liberdade radical. Má-fé. Responsabilidade absoluta.
 ## Sonoras
 - **Aliteração** — repetição de consoantes
 - **Onomatopeia** — imitação de som`,
+  },
+  {
+    id: "mat-probabilidade",
+    title: "Probabilidade e análise combinatória sem decoreba",
+    subject: "Matemática",
+    vestibular: "FUVEST",
+    difficulty: "Médio",
+    readingTime: 12,
+    excerpt:
+      "Princípio fundamental da contagem, combinações e probabilidade com exemplos de prova.",
+    body: `# Probabilidade e análise combinatória
+
+## Princípio fundamental da contagem
+Quando uma escolha tem m opções e outra tem n opções, existem m · n resultados possíveis.
+
+## Combinação
+Use combinações quando a ordem não importa: C(n,p) = n! / (p!(n-p)!).
+
+## Probabilidade
+Em espaços equiprováveis, P(A) = casos favoráveis / casos possíveis.
+
+## Estratégia
+Descreva primeiro o espaço amostral e só depois escolha entre arranjo, permutação ou combinação.`,
+  },
+  {
+    id: "fis-optica-geometrica",
+    title: "Óptica geométrica: espelhos, lentes e formação de imagens",
+    subject: "Física",
+    vestibular: "ITA",
+    difficulty: "Difícil",
+    readingTime: 16,
+    excerpt: "Raios notáveis, equação de Gauss e aumento linear para resolver sistemas ópticos.",
+    body: `# Óptica geométrica
+
+## Equação de Gauss
+1/f = 1/p + 1/p'. Adote uma convenção de sinais e mantenha-a até o fim.
+
+## Aumento linear
+A = i/o = -p'/p. O sinal informa se a imagem é direita ou invertida.
+
+## Raios notáveis
+Um raio paralelo converge para o foco; um raio que passa pelo centro óptico não sofre desvio relevante.`,
+  },
+  {
+    id: "qui-equilibrio-quimico",
+    title: "Equilíbrio químico e princípio de Le Chatelier",
+    subject: "Química",
+    vestibular: "IME",
+    difficulty: "Difícil",
+    readingTime: 15,
+    excerpt:
+      "Constantes de equilíbrio, quociente reacional e deslocamentos causados por perturbações.",
+    body: `# Equilíbrio químico
+
+No equilíbrio, as velocidades das reações direta e inversa são iguais.
+
+## Constante Kc
+Produtos sobre reagentes, cada concentração elevada ao coeficiente estequiométrico.
+
+## Le Chatelier
+O sistema responde a mudanças de concentração, pressão ou temperatura buscando reduzir a perturbação. Catalisadores não alteram K nem a composição final.`,
+  },
+  {
+    id: "bio-fisiologia-humana",
+    title: "Fisiologia humana: integração dos sistemas",
+    subject: "Biologia",
+    vestibular: "FAMERP",
+    difficulty: "Médio",
+    readingTime: 14,
+    excerpt: "Como os sistemas digestório, respiratório, circulatório e excretor trabalham juntos.",
+    body: `# Fisiologia humana
+
+## Trocas e transporte
+O sistema digestório fornece nutrientes, o respiratório realiza trocas gasosas e o circulatório distribui substâncias.
+
+## Homeostase
+Rins, fígado, pulmões e sistema endócrino cooperam para controlar pH, água, sais e glicemia.
+
+## Dica de prova
+Relacione sempre estrutura, função e consequência de uma falha no órgão analisado.`,
+  },
+  {
+    id: "hist-brasil-republica",
+    title: "República brasileira: de 1946 à redemocratização",
+    subject: "História",
+    vestibular: "UERJ",
+    difficulty: "Médio",
+    readingTime: 13,
+    excerpt:
+      "Populismo, ditadura militar, abertura política e Constituição de 1988 em uma linha do tempo.",
+    body: `# República brasileira
+
+## 1946-1964
+Democracia, industrialização, nacional-desenvolvimentismo e aumento das tensões sociais.
+
+## Ditadura militar
+Autoritarismo, atos institucionais, censura, milagre econômico e crise da dívida.
+
+## Redemocratização
+Diretas Já, fim do regime em 1985 e Constituição cidadã de 1988.`,
+  },
+  {
+    id: "geo-cartografia",
+    title: "Cartografia: escala, projeções e leitura de mapas",
+    subject: "Geografia",
+    vestibular: "UFPR",
+    difficulty: "Fácil",
+    readingTime: 9,
+    excerpt: "Converta escalas, interprete curvas de nível e reconheça distorções cartográficas.",
+    body: `# Cartografia
+
+## Escala
+Na escala 1:n, uma unidade no mapa equivale a n unidades reais.
+
+## Projeções
+Mercator preserva ângulos, Peters prioriza áreas e projeções azimutais partem de um plano de contato.
+
+## Relevo
+Curvas de nível próximas indicam maior declividade; curvas afastadas indicam relevo suave.`,
+  },
+  {
+    id: "port-interpretacao",
+    title: "Interpretação de texto: inferência, tese e efeitos de sentido",
+    subject: "Português",
+    vestibular: "UnB",
+    difficulty: "Médio",
+    readingTime: 11,
+    excerpt: "Um método para separar informação explícita, inferência válida e extrapolação.",
+    body: `# Interpretação de texto
+
+## Leia o comando primeiro
+Identifique se a questão pede informação, inferência, finalidade, tom ou relação entre trechos.
+
+## Evidência textual
+Toda alternativa correta precisa ser sustentada pelo texto, mesmo quando exige conhecimento linguístico.
+
+## Armadilhas
+Desconfie de generalizações absolutas, troca de causa por consequência e conclusões mais amplas que o texto.`,
+  },
+  {
+    id: "redacao-repertorio",
+    title: "Repertório sociocultural produtivo na redação",
+    subject: "Redação",
+    vestibular: "PUC-SP",
+    difficulty: "Fácil",
+    readingTime: 8,
+    excerpt:
+      "Como escolher, explicar e conectar referências ao argumento sem produzir citações decorativas.",
+    body: `# Repertório produtivo
+
+Um repertório é produtivo quando está correto, relacionado ao tema e explicado dentro da argumentação.
+
+## Estrutura prática
+Apresente a referência, explique a ideia relevante e conecte-a diretamente à tese do parágrafo.
+
+## Evite
+Citações soltas, dados sem fonte, referências inventadas e exemplos que substituem a análise.`,
   },
 ];
 

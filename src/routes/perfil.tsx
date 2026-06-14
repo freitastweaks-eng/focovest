@@ -4,6 +4,7 @@ import { Camera, Save, Trash2, Upload } from "lucide-react";
 import { toast } from "sonner";
 import { PageContainer, PageHeader } from "@/components/page";
 import { UserAvatar } from "@/components/user-avatar";
+import { Switch } from "@/components/ui/switch";
 import { supabase } from "@/integrations/supabase/client";
 import { VESTIBULARES } from "@/lib/data";
 import { COMMUNITY_FILES_BUCKET } from "@/lib/storage-url";
@@ -246,14 +247,21 @@ function PerfilPage() {
             <h3 className="mb-4 font-display text-base font-semibold">Configuracoes</h3>
 
             <Row label="Tema do App" hint={theme === "dark" ? "Escuro" : "Claro"}>
-              <Toggle
-                value={theme === "dark"}
-                onChange={(value) => setTheme(value ? "dark" : "light")}
+              <Switch
+                checked={theme === "dark"}
+                onCheckedChange={(value) => setTheme(value ? "dark" : "light")}
+                aria-label="Alternar tema do aplicativo"
+                className="h-7 w-12 data-[state=checked]:bg-lime data-[state=unchecked]:bg-secondary [&>span]:size-6 data-[state=checked]:[&>span]:translate-x-5"
               />
             </Row>
 
             <Row label="Sons de notificacao" hint={soundsEnabled ? "Ativados" : "Desativados"}>
-              <Toggle value={soundsEnabled} onChange={setSoundsEnabled} />
+              <Switch
+                checked={soundsEnabled}
+                onCheckedChange={setSoundsEnabled}
+                aria-label="Alternar sons de notificacao"
+                className="h-7 w-12 data-[state=checked]:bg-lime data-[state=unchecked]:bg-secondary [&>span]:size-6 data-[state=checked]:[&>span]:translate-x-5"
+              />
             </Row>
 
             <div className="my-4 h-px bg-border" />
@@ -340,25 +348,6 @@ function Row({ label, hint, children }: { label: string; hint?: string; children
       </div>
       {children}
     </div>
-  );
-}
-
-function Toggle({ value, onChange }: { value: boolean; onChange: (value: boolean) => void }) {
-  return (
-    <button
-      onClick={() => onChange(!value)}
-      className={cn(
-        "relative h-6 w-11 rounded-full transition-colors",
-        value ? "bg-lime" : "bg-secondary",
-      )}
-    >
-      <span
-        className={cn(
-          "absolute top-0.5 size-5 rounded-full bg-background transition-transform",
-          value ? "translate-x-[22px]" : "translate-x-0.5",
-        )}
-      />
-    </button>
   );
 }
 

@@ -274,8 +274,8 @@ function AssinaturaPage() {
         }
       />
 
-      <div className="grid gap-4 lg:grid-cols-[1fr_360px]">
-        <section className="space-y-4">
+      <div className="grid min-w-0 gap-4 xl:grid-cols-[minmax(0,1fr)_340px]">
+        <section className="min-w-0 space-y-4 xl:order-1">
           <div
             className={cn(
               "rounded-2xl border bg-card p-5",
@@ -287,7 +287,7 @@ function AssinaturaPage() {
             )}
           >
             <div className="flex flex-wrap items-start justify-between gap-4">
-              <div>
+              <div className="min-w-0">
                 <div className="inline-flex items-center gap-2 rounded-full border border-lime/30 bg-lime/10 px-3 py-1 text-xs font-semibold text-lime">
                   <Crown className="size-3.5" />
                   {currentPlan.name}
@@ -349,7 +349,7 @@ function AssinaturaPage() {
             )}
           </div>
 
-          <div className="rounded-2xl border border-border bg-card p-5">
+          <div className="min-w-0 rounded-2xl border border-border bg-card p-4 sm:p-5">
             <div className="mb-4 flex items-center justify-between gap-4">
               <div>
                 <div className="flex items-center gap-2 text-sm font-semibold text-muted-foreground">
@@ -473,8 +473,8 @@ function AssinaturaPage() {
           </div>
         </section>
 
-        <aside className="space-y-4">
-          <div className="rounded-2xl border border-border bg-card p-5">
+        <aside className="order-first min-w-0 space-y-4 xl:order-2">
+          <div className="rounded-2xl border border-border bg-card p-4 sm:p-5 xl:sticky xl:top-24">
             <div className="mb-4 flex items-center gap-2">
               <ShieldCheck className="size-4 text-lime" />
               <h3 className="font-display text-lg font-semibold">Planos sugeridos</h3>
@@ -495,18 +495,18 @@ function AssinaturaPage() {
                     )}
                   >
                     <div className="flex items-start justify-between gap-3">
-                      <div>
+                      <div className="min-w-0">
                         <div className="font-display font-semibold">{plan.name}</div>
                         <div className="mt-1 text-xs text-muted-foreground">{plan.summary}</div>
                       </div>
                       {plan.highlight && (
-                        <span className="rounded-full bg-lime px-2 py-0.5 text-[10px] font-bold text-lime-foreground">
+                        <span className="max-w-24 shrink-0 rounded-full bg-lime px-2 py-0.5 text-center text-[10px] font-bold leading-tight text-lime-foreground">
                           {plan.highlight}
                         </span>
                       )}
                     </div>
-                    <div className="mt-3 flex items-end justify-between">
-                      <div>
+                    <div className="mt-3 flex flex-wrap items-end justify-between gap-2">
+                      <div className="min-w-0">
                         <span className="font-display text-2xl font-semibold">{plan.price}</span>
                         <span className="ml-1 text-xs text-muted-foreground">{plan.cadence}</span>
                       </div>

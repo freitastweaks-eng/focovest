@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Copy, RefreshCw } from "lucide-react";
+import QRCode from "qrcode";
 import { Button } from "@/components/ui/button";
 
 interface LofyPayPixCheckoutProps {
@@ -20,7 +21,39 @@ export function LofyPayPixCheckout({
   onRefreshStatus,
 }: LofyPayPixCheckoutProps) {
   const [copied, setCopied] = useState(false);
+  const [generatedQrCode, setGeneratedQrCode] = useState("");
   const isPaid = status === "PAID";
+
+  useEffect(() => {
+    let active = true;
+    if (paymentCodeBase64 || !paymentCode) {
+      setGeneratedQrCode("");
+      return;
+    }
+
+    QRCode.toDataURL(paymentCode, {
+      width: 320,
+      margin: 2,
+      color: { dark: "#06101f", light: "#ffffff" },
+      errorCorrectionLevel: "M",
+    })
+      .then((url) => {
+        if (active) setGeneratedQrCode(url);
+      })
+      .catch(() => {
+        if (active) setGeneratedQrCode("");
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [paymentCode, paymentCodeBase64]);
+
+  const qrCodeSource = paymentCodeBase64
+    ? paymentCodeBase64.startsWith("http") || paymentCodeBase64.startsWith("data:")
+      ? paymentCodeBase64
+      : `data:image/png;base64,${paymentCodeBase64}`
+    : generatedQrCode;
 
   const copyCode = async () => {
     try {
@@ -46,17 +79,13 @@ export function LofyPayPixCheckout({
         </Button>
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-[320px_1fr]">
-        <div className="flex min-h-72 items-center justify-center rounded-3xl border border-border bg-secondary/30 p-4">
-          {paymentCodeBase64 ? (
+      <div className="grid min-w-0 gap-4 xl:grid-cols-[minmax(260px,320px)_minmax(0,1fr)]">
+        <div className="flex min-h-72 items-center justify-center rounded-3xl border border-border bg-white p-4">
+          {qrCodeSource ? (
             <img
-              src={
-                paymentCodeBase64.startsWith("http")
-                  ? paymentCodeBase64
-                  : `data:image/png;base64,${paymentCodeBase64}`
-              }
+              src={qrCodeSource}
               alt="QR Code PIX"
-              className="mx-auto h-72 w-72 object-contain"
+              className="mx-auto aspect-square w-full max-w-72 object-contain"
             />
           ) : (
             <div className="max-w-56 text-center text-sm text-muted-foreground">
@@ -65,7 +94,7 @@ export function LofyPayPixCheckout({
           )}
         </div>
 
-        <div className="space-y-4">
+        <div className="min-w-0 space-y-4">
           <div className="rounded-2xl border border-border bg-secondary/30 p-4">
             <div className="text-xs uppercase tracking-[0.3em] text-muted-foreground">Status</div>
             <div
@@ -88,7 +117,7 @@ export function LofyPayPixCheckout({
             <div className="text-xs uppercase tracking-[0.3em] text-muted-foreground">
               Código PIX
             </div>
-            <div className="mt-2 whitespace-pre-wrap break-words text-sm leading-relaxed">
+            <div className="mt-2 max-h-36 overflow-auto break-all rounded-xl bg-background/60 p-3 font-mono text-xs leading-relaxed">
               {paymentCode}
             </div>
             <Button onClick={copyCode} className="mt-4">
