@@ -1,0 +1,29 @@
+name: Supabase backup
+
+on:
+  schedule:
+    - cron: "17 4 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install PostgreSQL client
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client
+      - name: Create database backup
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: node scripts/backup-supabase.mjs
+      - name: Upload encrypted-at-rest GitHub artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: focovest-supabase-${{ github.run_id }}
+          path: backups/*.dump
+          if-no-files-found: error
+          retention-days: 14

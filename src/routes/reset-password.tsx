@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { friendlyAuthError, validatePassword } from "@/lib/auth-security";
@@ -14,6 +14,15 @@ function ResetPage() {
   const [show, setShow] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [checkingLink, setCheckingLink] = useState(true);
+  const [validSession, setValidSession] = useState(false);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      setValidSession(Boolean(data.session));
+      setCheckingLink(false);
+    });
+  }, []);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,6 +38,28 @@ function ResetPage() {
     toast.success("Senha atualizada! 🎉");
     navigate({ to: "/dashboard" });
   };
+
+  if (checkingLink) {
+    return (
+      <div className="dark flex min-h-screen items-center justify-center bg-background">
+        <div className="size-10 animate-spin rounded-full border-2 border-lime border-t-transparent" />
+      </div>
+    );
+  }
+
+  if (!validSession) {
+    return (
+      <AuthCard
+        title="Link invalido ou expirado"
+        subtitle="Solicite um novo link para redefinir sua senha"
+        error={null}
+        loading={false}
+        onSubmit={() => navigate({ to: "/esqueci-senha" })}
+        submitLabel="Solicitar novo link"
+        footer={<></>}
+      />
+    );
+  }
 
   return (
     <AuthCard

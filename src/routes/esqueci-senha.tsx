@@ -19,7 +19,7 @@ function ForgotPage() {
     setLoading(true);
     const normalizedEmail = email.trim().toLowerCase();
     const { error } = await supabase.auth.resetPasswordForEmail(normalizedEmail, {
-      redirectTo: `${window.location.origin}/reset-password`,
+      redirectTo: `${window.location.origin}/auth/callback?next=/reset-password`,
     });
     setLoading(false);
     if (error) return setError(friendlyAuthError(error, "Não foi possível enviar o link agora."));
@@ -30,7 +30,7 @@ function ForgotPage() {
   if (sent) {
     return (
       <div className="dark relative flex min-h-screen items-center justify-center bg-background px-4">
-        <div className="glass w-full max-w-[460px] rounded-3xl p-10 text-center">
+        <div className="glass w-full max-w-[460px] rounded-3xl p-6 text-center sm:p-10">
           <div className="mx-auto mb-4 flex size-16 items-center justify-center rounded-full bg-lime/15">
             <CheckCircle2 className="size-8 text-lime" />
           </div>

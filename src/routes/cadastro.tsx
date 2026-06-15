@@ -5,6 +5,7 @@ import { Eye, EyeOff, Sparkles, Loader2, MailCheck, Megaphone } from "lucide-rea
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { friendlyAuthError, MIN_PASSWORD_LENGTH, validatePassword } from "@/lib/auth-security";
+import { PublicFooter } from "@/components/public-footer";
 
 export const Route = createFileRoute("/cadastro")({ component: CadastroPage });
 
@@ -21,6 +22,7 @@ function CadastroPage() {
   const [error, setError] = useState<string | null>(null);
   const [confirmationEmail, setConfirmationEmail] = useState<string | null>(null);
   const [showLaunchNotice, setShowLaunchNotice] = useState(false);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,6 +34,7 @@ function CadastroPage() {
     const passwordError = validatePassword(password);
     if (passwordError) return setError(passwordError);
     if (password !== confirm) return setError("As senhas não coincidem.");
+    if (!acceptedTerms) return setError("Aceite os Termos de uso e a Politica de privacidade.");
 
     setLoading(true);
     const { data, error } = await supabase.auth.signUp({
@@ -39,7 +42,7 @@ function CadastroPage() {
       password,
       options: {
         data: { name: normalizedName },
-        emailRedirectTo: `${window.location.origin}/dashboard`,
+        emailRedirectTo: `${window.location.origin}/auth/callback?next=/onboarding`,
       },
     });
     setLoading(false);
@@ -92,7 +95,7 @@ function CadastroPage() {
       type: "signup",
       email: confirmationEmail,
       options: {
-        emailRedirectTo: `${window.location.origin}/dashboard`,
+        emailRedirectTo: `${window.location.origin}/auth/callback?next=/onboarding`,
       },
     });
     setLoading(false);
@@ -210,6 +213,26 @@ function CadastroPage() {
         show={showPw}
         toggle={() => setShowPw((s) => !s)}
       />
+      <label className="flex items-start gap-3 rounded-xl border border-border bg-background/40 p-3 text-xs leading-relaxed text-muted-foreground">
+        <input
+          type="checkbox"
+          checked={acceptedTerms}
+          onChange={(event) => setAcceptedTerms(event.target.checked)}
+          className="mt-0.5 size-4 accent-lime"
+          required
+        />
+        <span>
+          Li e aceito os{" "}
+          <Link to="/termos" className="font-semibold text-lime">
+            Termos de uso
+          </Link>{" "}
+          e a{" "}
+          <Link to="/privacidade" className="font-semibold text-lime">
+            Politica de privacidade
+          </Link>
+          .
+        </span>
+      </label>
     </AuthCard>
   );
 }
@@ -253,12 +276,12 @@ export function AuthCard({
   extraTop?: React.ReactNode;
 }) {
   return (
-    <div className="dark relative min-h-screen overflow-hidden bg-background">
+    <div className="dark relative flex min-h-screen flex-col overflow-hidden bg-background">
       <div className="pointer-events-none absolute inset-0">
         <div className="absolute -left-32 -top-32 size-[480px] rounded-full bg-lime/15 blur-[140px]" />
         <div className="absolute -right-32 bottom-0 size-[480px] rounded-full bg-indigo-500/15 blur-[140px]" />
       </div>
-      <div className="relative z-10 flex min-h-screen flex-col items-center justify-center px-4 py-12">
+      <div className="relative z-10 flex flex-1 flex-col items-center justify-center px-4 py-12">
         <Link to="/" className="mb-8 flex items-center gap-2.5">
           <div className="flex size-10 items-center justify-center rounded-xl bg-lime text-lime-foreground accent-glow">
             <Sparkles className="size-4" strokeWidth={2.5} />
@@ -270,7 +293,7 @@ export function AuthCard({
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="glass w-full max-w-[460px] rounded-3xl p-8 shadow-2xl"
+          className="glass w-full max-w-[460px] rounded-3xl p-5 shadow-2xl sm:p-8"
         >
           <h1 className="font-display text-2xl font-semibold sm:text-3xl">{title}</h1>
           <p className="mt-1 text-sm text-muted-foreground">{subtitle}</p>
@@ -319,6 +342,7 @@ export function AuthCard({
           <p className="mt-6 text-center text-sm text-muted-foreground">{footer}</p>
         </motion.div>
       </div>
+      <PublicFooter />
     </div>
   );
 }

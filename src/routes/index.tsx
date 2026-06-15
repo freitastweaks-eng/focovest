@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { motion } from "motion/react";
 import { BookOpen, Timer, PenLine, Sparkles, ArrowRight, Check } from "lucide-react";
+import { PublicFooter } from "@/components/public-footer";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -200,6 +201,7 @@ function LandingPage() {
           </div>
         </section>
       </main>
+      <PublicFooter />
     </div>
   );
 }

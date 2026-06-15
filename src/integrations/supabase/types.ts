@@ -8,6 +8,42 @@ export type Database = {
   };
   public: {
     Tables: {
+      app_error_events: {
+        Row: {
+          created_at: string;
+          id: string;
+          message: string;
+          release: string | null;
+          request_hash: string | null;
+          route: string | null;
+          source: string;
+          stack: string | null;
+          user_agent: string | null;
+        };
+        Insert: {
+          created_at?: string;
+          id?: string;
+          message: string;
+          release?: string | null;
+          request_hash?: string | null;
+          route?: string | null;
+          source: string;
+          stack?: string | null;
+          user_agent?: string | null;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          message?: string;
+          release?: string | null;
+          request_hash?: string | null;
+          route?: string | null;
+          source?: string;
+          stack?: string | null;
+          user_agent?: string | null;
+        };
+        Relationships: [];
+      };
       calendar_events: {
         Row: {
           color: string;

@@ -10,9 +10,12 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TimerRouteImport } from './routes/timer'
+import { Route as TermosRouteImport } from './routes/termos'
+import { Route as SuporteRouteImport } from './routes/suporte'
 import { Route as RevisaoRapidaRouteImport } from './routes/revisao-rapida'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as RedacoesRouteImport } from './routes/redacoes'
+import { Route as PrivacidadeRouteImport } from './routes/privacidade'
 import { Route as PerfilRouteImport } from './routes/perfil'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as LoginRouteImport } from './routes/login'
@@ -35,11 +38,22 @@ import { Route as RedacoesMinhasRouteImport } from './routes/redacoes.minhas'
 import { Route as RedacoesEscreverRouteImport } from './routes/redacoes.escrever'
 import { Route as RedacoesIdRouteImport } from './routes/redacoes.$id'
 import { Route as ConteudosIdRouteImport } from './routes/conteudos.$id'
+import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
 import { Route as FlashcardsIdEstudarRouteImport } from './routes/flashcards.$id.estudar'
 
 const TimerRoute = TimerRouteImport.update({
   id: '/timer',
   path: '/timer',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TermosRoute = TermosRouteImport.update({
+  id: '/termos',
+  path: '/termos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SuporteRoute = SuporteRouteImport.update({
+  id: '/suporte',
+  path: '/suporte',
   getParentRoute: () => rootRouteImport,
 } as any)
 const RevisaoRapidaRoute = RevisaoRapidaRouteImport.update({
@@ -55,6 +69,11 @@ const ResetPasswordRoute = ResetPasswordRouteImport.update({
 const RedacoesRoute = RedacoesRouteImport.update({
   id: '/redacoes',
   path: '/redacoes',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrivacidadeRoute = PrivacidadeRouteImport.update({
+  id: '/privacidade',
+  path: '/privacidade',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PerfilRoute = PerfilRouteImport.update({
@@ -167,6 +186,11 @@ const ConteudosIdRoute = ConteudosIdRouteImport.update({
   path: '/conteudos/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthCallbackRoute = AuthCallbackRouteImport.update({
+  id: '/auth/callback',
+  path: '/auth/callback',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const FlashcardsIdEstudarRoute = FlashcardsIdEstudarRouteImport.update({
   id: '/flashcards/$id/estudar',
   path: '/flashcards/$id/estudar',
@@ -186,10 +210,14 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/onboarding': typeof OnboardingRoute
   '/perfil': typeof PerfilRoute
+  '/privacidade': typeof PrivacidadeRoute
   '/redacoes': typeof RedacoesRouteWithChildren
   '/reset-password': typeof ResetPasswordRoute
   '/revisao-rapida': typeof RevisaoRapidaRoute
+  '/suporte': typeof SuporteRoute
+  '/termos': typeof TermosRoute
   '/timer': typeof TimerRoute
+  '/auth/callback': typeof AuthCallbackRoute
   '/conteudos/$id': typeof ConteudosIdRoute
   '/redacoes/$id': typeof RedacoesIdRoute
   '/redacoes/escrever': typeof RedacoesEscreverRoute
@@ -215,9 +243,13 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/onboarding': typeof OnboardingRoute
   '/perfil': typeof PerfilRoute
+  '/privacidade': typeof PrivacidadeRoute
   '/reset-password': typeof ResetPasswordRoute
   '/revisao-rapida': typeof RevisaoRapidaRoute
+  '/suporte': typeof SuporteRoute
+  '/termos': typeof TermosRoute
   '/timer': typeof TimerRoute
+  '/auth/callback': typeof AuthCallbackRoute
   '/conteudos/$id': typeof ConteudosIdRoute
   '/redacoes/$id': typeof RedacoesIdRoute
   '/redacoes/escrever': typeof RedacoesEscreverRoute
@@ -244,10 +276,14 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/onboarding': typeof OnboardingRoute
   '/perfil': typeof PerfilRoute
+  '/privacidade': typeof PrivacidadeRoute
   '/redacoes': typeof RedacoesRouteWithChildren
   '/reset-password': typeof ResetPasswordRoute
   '/revisao-rapida': typeof RevisaoRapidaRoute
+  '/suporte': typeof SuporteRoute
+  '/termos': typeof TermosRoute
   '/timer': typeof TimerRoute
+  '/auth/callback': typeof AuthCallbackRoute
   '/conteudos/$id': typeof ConteudosIdRoute
   '/redacoes/$id': typeof RedacoesIdRoute
   '/redacoes/escrever': typeof RedacoesEscreverRoute
@@ -275,10 +311,14 @@ export interface FileRouteTypes {
     | '/login'
     | '/onboarding'
     | '/perfil'
+    | '/privacidade'
     | '/redacoes'
     | '/reset-password'
     | '/revisao-rapida'
+    | '/suporte'
+    | '/termos'
     | '/timer'
+    | '/auth/callback'
     | '/conteudos/$id'
     | '/redacoes/$id'
     | '/redacoes/escrever'
@@ -304,9 +344,13 @@ export interface FileRouteTypes {
     | '/login'
     | '/onboarding'
     | '/perfil'
+    | '/privacidade'
     | '/reset-password'
     | '/revisao-rapida'
+    | '/suporte'
+    | '/termos'
     | '/timer'
+    | '/auth/callback'
     | '/conteudos/$id'
     | '/redacoes/$id'
     | '/redacoes/escrever'
@@ -332,10 +376,14 @@ export interface FileRouteTypes {
     | '/login'
     | '/onboarding'
     | '/perfil'
+    | '/privacidade'
     | '/redacoes'
     | '/reset-password'
     | '/revisao-rapida'
+    | '/suporte'
+    | '/termos'
     | '/timer'
+    | '/auth/callback'
     | '/conteudos/$id'
     | '/redacoes/$id'
     | '/redacoes/escrever'
@@ -362,10 +410,14 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   OnboardingRoute: typeof OnboardingRoute
   PerfilRoute: typeof PerfilRoute
+  PrivacidadeRoute: typeof PrivacidadeRoute
   RedacoesRoute: typeof RedacoesRouteWithChildren
   ResetPasswordRoute: typeof ResetPasswordRoute
   RevisaoRapidaRoute: typeof RevisaoRapidaRoute
+  SuporteRoute: typeof SuporteRoute
+  TermosRoute: typeof TermosRoute
   TimerRoute: typeof TimerRoute
+  AuthCallbackRoute: typeof AuthCallbackRoute
   ConteudosIdRoute: typeof ConteudosIdRoute
   SimuladosIdRoute: typeof SimuladosIdRoute
   ConteudosIndexRoute: typeof ConteudosIndexRoute
@@ -381,6 +433,20 @@ declare module '@tanstack/react-router' {
       path: '/timer'
       fullPath: '/timer'
       preLoaderRoute: typeof TimerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/termos': {
+      id: '/termos'
+      path: '/termos'
+      fullPath: '/termos'
+      preLoaderRoute: typeof TermosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/suporte': {
+      id: '/suporte'
+      path: '/suporte'
+      fullPath: '/suporte'
+      preLoaderRoute: typeof SuporteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/revisao-rapida': {
@@ -402,6 +468,13 @@ declare module '@tanstack/react-router' {
       path: '/redacoes'
       fullPath: '/redacoes'
       preLoaderRoute: typeof RedacoesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/privacidade': {
+      id: '/privacidade'
+      path: '/privacidade'
+      fullPath: '/privacidade'
+      preLoaderRoute: typeof PrivacidadeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/perfil': {
@@ -558,6 +631,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ConteudosIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/auth/callback': {
+      id: '/auth/callback'
+      path: '/auth/callback'
+      fullPath: '/auth/callback'
+      preLoaderRoute: typeof AuthCallbackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/flashcards/$id/estudar': {
       id: '/flashcards/$id/estudar'
       path: '/flashcards/$id/estudar'
@@ -601,10 +681,14 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   OnboardingRoute: OnboardingRoute,
   PerfilRoute: PerfilRoute,
+  PrivacidadeRoute: PrivacidadeRoute,
   RedacoesRoute: RedacoesRouteWithChildren,
   ResetPasswordRoute: ResetPasswordRoute,
   RevisaoRapidaRoute: RevisaoRapidaRoute,
+  SuporteRoute: SuporteRoute,
+  TermosRoute: TermosRoute,
   TimerRoute: TimerRoute,
+  AuthCallbackRoute: AuthCallbackRoute,
   ConteudosIdRoute: ConteudosIdRoute,
   SimuladosIdRoute: SimuladosIdRoute,
   ConteudosIndexRoute: ConteudosIndexRoute,

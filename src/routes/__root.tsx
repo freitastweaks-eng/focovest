@@ -16,6 +16,7 @@ import { Sidebar } from "@/components/sidebar";
 import { TopBar } from "@/components/topbar";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider, useAuth } from "@/lib/auth-context";
+import { AppErrorBoundary, ErrorMonitor } from "@/components/error-monitor";
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
   head: () => ({
@@ -35,7 +36,17 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   component: RootComponent,
 });
 
-const PUBLIC_PATHS = new Set(["/", "/login", "/cadastro", "/esqueci-senha", "/reset-password"]);
+const PUBLIC_PATHS = new Set([
+  "/",
+  "/login",
+  "/cadastro",
+  "/esqueci-senha",
+  "/reset-password",
+  "/auth/callback",
+  "/termos",
+  "/privacidade",
+  "/suporte",
+]);
 const AUTH_ONLY_PATHS = new Set(["/", "/login", "/cadastro", "/esqueci-senha"]);
 
 function RootShell({ children }: { children: React.ReactNode }) {
@@ -58,7 +69,10 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
         <AuthProvider>
-          <Gate />
+          <ErrorMonitor />
+          <AppErrorBoundary>
+            <Gate />
+          </AppErrorBoundary>
           <Toaster
             position="bottom-right"
             theme="system"
