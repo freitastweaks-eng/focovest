@@ -55,10 +55,13 @@ function TimerPage() {
 
   const startTimeRef = useRef<number | null>(null);
   const baseRemainingRef = useRef<number>(totalMs);
+  const previousTotalMsRef = useRef<number>(totalMs);
   const rafRef = useRef<number | null>(null);
 
-  // reset on mode/phase/custom change while not running
+  // Reset on mode/phase/custom duration change while not running. Pausing keeps the current time.
   useEffect(() => {
+    if (previousTotalMsRef.current === totalMs) return;
+    previousTotalMsRef.current = totalMs;
     if (!running) {
       setRemaining(totalMs);
       baseRemainingRef.current = totalMs;
