@@ -222,21 +222,12 @@ function GroupsApp({
     }
 
     const inviteUrl = `${window.location.origin}/grupos?convite=${encodeURIComponent(token)}`;
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: `Convite para ${g.name}`,
-          text: `Entre no meu grupo de estudos ${g.name} no VestApp.`,
-          url: inviteUrl,
-        });
-        return;
-      } catch (shareError) {
-        if (shareError instanceof DOMException && shareError.name === "AbortError") return;
-      }
+    try {
+      await navigator.clipboard.writeText(inviteUrl);
+      toast.success("Link de convite copiado!");
+    } catch {
+      window.prompt("Copie o link de convite:", inviteUrl);
     }
-
-    await navigator.clipboard.writeText(inviteUrl);
-    toast.success("Link de convite copiado!");
   };
 
   const leave = async (g: Group) => {
