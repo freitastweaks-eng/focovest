@@ -162,8 +162,13 @@ function ComunidadePage() {
 
   const deletePost = async (postId: string) => {
     if (!confirm("Excluir este post?")) return;
-    await supabase.from("community_posts").delete().eq("id", postId);
+    const { error } = await supabase.from("community_posts").delete().eq("id", postId);
+    if (error) {
+      toast.error("Nao foi possivel excluir o post.");
+      return;
+    }
     setPosts((p) => p.filter((x) => x.id !== postId));
+    setOpenPost((p) => (p?.id === postId ? null : p));
     toast.success("Post excluído");
   };
 
@@ -269,10 +274,10 @@ function ComunidadePage() {
                   {user?.id === p.user_id && (
                     <button
                       onClick={() => deletePost(p.id)}
-                      className="opacity-0 transition-opacity group-hover:opacity-100"
+                      className="rounded-lg p-1 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
                       aria-label="Excluir"
                     >
-                      <Trash2 className="size-4 text-muted-foreground hover:text-destructive" />
+                      <Trash2 className="size-4" />
                     </button>
                   )}
                 </header>
@@ -330,6 +335,7 @@ function ComunidadePage() {
         post={openPost}
         onClose={() => setOpenPost(null)}
         currentUserId={user?.id}
+        onDelete={deletePost}
         authorName={profile?.display_name || "Estudante"}
         authorAvatar={profile?.avatar || "🎯"}
       />
@@ -602,12 +608,14 @@ function PostDialog({
   post,
   onClose,
   currentUserId,
+  onDelete,
   authorName,
   authorAvatar,
 }: {
   post: Post | null;
   onClose: () => void;
   currentUserId?: string;
+  onDelete: (postId: string) => void;
   authorName: string;
   authorAvatar: string;
 }) {
@@ -682,14 +690,27 @@ function PostDialog({
         {post && (
           <>
             <DialogHeader>
-              <div className="flex items-center gap-3">
-                <div className="flex size-10 items-center justify-center rounded-xl bg-secondary text-xl">
-                  {post.author_avatar}
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <div className="flex size-10 items-center justify-center rounded-xl bg-secondary text-xl">
+                    {post.author_avatar}
+                  </div>
+                  <div>
+                    <DialogTitle className="font-display text-base">{post.author_name}</DialogTitle>
+                    <div className="text-xs text-muted-foreground">{timeAgo(post.created_at)}</div>
+                  </div>
                 </div>
-                <div>
-                  <DialogTitle className="font-display text-base">{post.author_name}</DialogTitle>
-                  <div className="text-xs text-muted-foreground">{timeAgo(post.created_at)}</div>
-                </div>
+                {post.user_id === currentUserId && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => onDelete(post.id)}
+                    className="rounded-xl text-destructive hover:text-destructive"
+                  >
+                    <Trash2 className="size-3.5" /> Excluir
+                  </Button>
+                )}
               </div>
             </DialogHeader>
             <div className="grid gap-3">

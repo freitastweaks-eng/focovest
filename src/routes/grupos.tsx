@@ -247,6 +247,19 @@ function GroupsApp({
     loadAll();
   };
 
+  const deleteGroup = async (g: Group) => {
+    if (!user || g.owner_id !== user.id) return;
+    if (!confirm(`Excluir o grupo "${g.name}"? Essa acao nao pode ser desfeita.`)) return;
+    const { error } = await supabase.from("study_groups").delete().eq("id", g.id);
+    if (error) {
+      toast.error("Nao foi possivel excluir o grupo.");
+      return;
+    }
+    toast.success("Grupo excluido.");
+    setActive(null);
+    loadAll();
+  };
+
   return (
     <Page
       title="Grupos de Estudo"
@@ -274,6 +287,7 @@ function GroupsApp({
           onLeave={() => leave(active)}
           isOwner={active.owner_id === user?.id}
           onShareInvite={() => shareInvite(active)}
+          onDelete={() => deleteGroup(active)}
         />
       ) : (
         <div className="space-y-8">
@@ -554,6 +568,7 @@ function GroupDetail({
   onLeave,
   isOwner,
   onShareInvite,
+  onDelete,
 }: {
   group: Group;
   user: { id: string };
@@ -562,6 +577,7 @@ function GroupDetail({
   onLeave: () => void;
   isOwner: boolean;
   onShareInvite: () => void;
+  onDelete: () => void;
 }) {
   const [members, setMembers] = useState<Member[]>([]);
   const [posts, setPosts] = useState<Post[]>([]);
@@ -669,15 +685,27 @@ function GroupDetail({
             </div>
           </div>
         </div>
-        {isOwner && group.visibility === "private" ? (
-          <Button variant="outline" size="sm" onClick={onShareInvite} className="rounded-xl">
-            <Share2 className="size-3.5" /> Compartilhar convite
-          </Button>
-        ) : !isOwner ? (
-          <Button variant="outline" size="sm" onClick={onLeave} className="rounded-xl">
-            <LogOut className="size-3.5" /> Sair
-          </Button>
-        ) : null}
+        <div className="flex flex-wrap justify-end gap-2">
+          {isOwner && group.visibility === "private" && (
+            <Button variant="outline" size="sm" onClick={onShareInvite} className="rounded-xl">
+              <Share2 className="size-3.5" /> Compartilhar convite
+            </Button>
+          )}
+          {isOwner ? (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onDelete}
+              className="rounded-xl text-destructive hover:text-destructive"
+            >
+              <Trash2 className="size-3.5" /> Excluir grupo
+            </Button>
+          ) : (
+            <Button variant="outline" size="sm" onClick={onLeave} className="rounded-xl">
+              <LogOut className="size-3.5" /> Sair
+            </Button>
+          )}
+        </div>
       </div>
 
       <Tabs defaultValue="feed">

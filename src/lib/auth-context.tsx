@@ -37,6 +37,22 @@ function getErrorMessage(error: unknown, fallback: string) {
   return fallback;
 }
 
+function getMetadataName(user: User) {
+  const metadata = user.user_metadata ?? {};
+  const candidates = [metadata.name, metadata.full_name, metadata.display_name];
+  const name = candidates.find((value): value is string => typeof value === "string" && !!value.trim());
+  return name?.trim() || user.email?.split("@")[0] || "Estudante";
+}
+
+function syncLocalProfile(profile: Pick<Profile, "display_name" | "avatar" | "vestibular" | "target_score">) {
+  useAppStore.getState().setUser({
+    name: profile.display_name || "Estudante",
+    avatar: profile.avatar || "target",
+    vestibular: profile.vestibular || "ENEM",
+    targetScore: profile.target_score || 850,
+  });
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
@@ -44,9 +60,47 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const loadProfile = async (uid: string) => {
+  const loadProfile = async (authUser: User) => {
+    const uid = authUser.id;
+    const fallbackName = getMetadataName(authUser);
     const { data } = await supabase.from("profiles").select("*").eq("id", uid).maybeSingle();
-    if (data) setProfile(data as Profile);
+    if (data) {
+      const loaded = data as Profile;
+      if (!loaded.display_name?.trim() || loaded.display_name === "Estudante") {
+        const patch = { display_name: fallbackName };
+        const { data: updated } = await supabase
+          .from("profiles")
+          .update(patch)
+          .eq("id", uid)
+          .select()
+          .maybeSingle();
+        const normalized = (updated as Profile | null) ?? { ...loaded, ...patch };
+        setProfile(normalized);
+        syncLocalProfile(normalized);
+        return;
+      }
+      setProfile(loaded);
+      syncLocalProfile(loaded);
+      return;
+    }
+
+    const fallbackProfile = {
+      id: uid,
+      display_name: fallbackName,
+      avatar: "target",
+      vestibular: "ENEM",
+      target_score: 850,
+      study_styles: [] as string[],
+      onboarded: false,
+    };
+    const { data: inserted } = await supabase
+      .from("profiles")
+      .insert(fallbackProfile)
+      .select()
+      .maybeSingle();
+    const nextProfile = (inserted as Profile | null) ?? fallbackProfile;
+    setProfile(nextProfile);
+    syncLocalProfile(nextProfile);
   };
 
   const loadSubscription = async (uid: string) => {
@@ -62,7 +116,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (sess?.user) {
         const uid = sess.user.id;
         setTimeout(() => {
-          loadProfile(uid);
+          loadProfile(sess.user);
           loadSubscription(uid);
           useAppStore
             .getState()
@@ -80,7 +134,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(data.session?.user ?? null);
       if (data.session?.user) {
         const uid = data.session.user.id;
-        loadProfile(uid);
+        loadProfile(data.session.user);
         loadSubscription(uid);
         useAppStore
           .getState()
@@ -94,7 +148,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const refreshProfile = async () => {
-    if (user) await loadProfile(user.id);
+    if (user) await loadProfile(user);
   };
 
   const refreshSubscription = async () => {
@@ -117,6 +171,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     if (data) {
       setProfile(data as Profile);
+      syncLocalProfile(data as Profile);
       return;
     }
 
@@ -132,6 +187,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!inserted) throw new Error("Nao foi possivel salvar o perfil.");
 
     setProfile(inserted as Profile);
+    syncLocalProfile(inserted as Profile);
   };
 
   const signOut = async () => {
