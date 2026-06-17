@@ -34,6 +34,7 @@ import {
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { DailyLimitBanner, DailyLimitBlock, useDailyBenefitAccess } from "@/lib/daily-access";
 
 export const Route = createFileRoute("/calendario")({ component: CalendarioPage });
 
@@ -79,7 +80,10 @@ function fmtLocalInput(d: Date) {
 }
 
 function CalendarioPage() {
-  const { user } = useAuth();
+  const { user, subscription } = useAuth();
+  const calendarAccess = useDailyBenefitAccess("calendar", subscription);
+  const { consume: consumeCalendarAccess } = calendarAccess;
+  const [entryAllowed, setEntryAllowed] = useState(calendarAccess.allowed);
   const [cursor, setCursor] = useState(() => {
     const d = new Date();
     d.setDate(1);
@@ -90,6 +94,10 @@ function CalendarioPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<CalEvent | null>(null);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+
+  useEffect(() => {
+    setEntryAllowed(consumeCalendarAccess());
+  }, [consumeCalendarAccess]);
 
   // Fetch events for current month range
   useEffect(() => {
@@ -232,167 +240,181 @@ function CalendarioPage() {
           </button>
         }
       />
+      <DailyLimitBanner benefitKey="calendar" subscription={subscription} />
 
-      <div className="grid gap-4 lg:grid-cols-[1fr_320px]">
-        <div className="rounded-2xl border border-border bg-card p-4 md:p-5">
-          <div className="mb-4 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <CalendarIcon className="size-4 text-lime" />
-              <h2 className="font-display text-xl font-semibold capitalize">
-                {MONTHS[cursor.getMonth()]} {cursor.getFullYear()}
-              </h2>
-            </div>
-            <div className="flex items-center gap-1">
-              <button
-                onClick={() => setCursor(new Date(cursor.getFullYear(), cursor.getMonth() - 1, 1))}
-                className="press flex size-9 items-center justify-center rounded-lg border border-border bg-secondary/40 hover:bg-secondary"
-              >
-                <ChevronLeft className="size-4" />
-              </button>
-              <button
-                onClick={() => {
-                  const d = new Date();
-                  d.setDate(1);
-                  setCursor(d);
-                }}
-                className="press rounded-lg border border-border bg-secondary/40 px-3 py-1.5 text-xs font-medium hover:bg-secondary"
-              >
-                Hoje
-              </button>
-              <button
-                onClick={() => setCursor(new Date(cursor.getFullYear(), cursor.getMonth() + 1, 1))}
-                className="press flex size-9 items-center justify-center rounded-lg border border-border bg-secondary/40 hover:bg-secondary"
-              >
-                <ChevronRight className="size-4" />
-              </button>
-            </div>
-          </div>
-
-          <div className="mb-2 grid grid-cols-7 gap-1 text-center text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-            {WEEKDAYS.map((d) => (
-              <div key={d} className="py-1">
-                {d}
-              </div>
-            ))}
-          </div>
-
-          <div className="grid grid-cols-7 gap-1">
-            {monthGrid.map(({ date, inMonth }, i) => {
-              const key = `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
-              const dayEvents = eventsByDay.get(key) || [];
-              const isToday = key === todayKey;
-              return (
-                <button
-                  key={i}
-                  onClick={() => openCreate(date)}
-                  className={cn(
-                    "press group relative aspect-square min-h-[64px] rounded-lg border border-border/60 p-1.5 text-left transition hover:border-lime/50 hover:bg-secondary/40 sm:aspect-auto sm:min-h-[88px]",
-                    !inMonth && "opacity-40",
-                    isToday && "border-lime bg-lime/5",
-                  )}
-                >
-                  <div
-                    className={cn(
-                      "mb-1 inline-flex size-6 items-center justify-center rounded-full text-xs font-semibold tabular-nums",
-                      isToday ? "bg-lime text-lime-foreground" : "text-foreground",
-                    )}
-                  >
-                    {date.getDate()}
-                  </div>
-                  <div className="space-y-0.5">
-                    {dayEvents.slice(0, 2).map((ev) => (
-                      <div
-                        key={ev.id}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          openEdit(ev);
-                        }}
-                        className={cn(
-                          "truncate rounded px-1 py-0.5 text-[10px] font-medium",
-                          ev.completed && "opacity-50 line-through",
-                        )}
-                        style={{ backgroundColor: `${ev.color}33`, color: ev.color }}
-                      >
-                        {ev.title}
-                      </div>
-                    ))}
-                    {dayEvents.length > 2 && (
-                      <div className="text-[10px] text-muted-foreground">
-                        +{dayEvents.length - 2} mais
-                      </div>
-                    )}
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-          {loading && (
-            <div className="mt-3 text-center text-xs text-muted-foreground">Carregando…</div>
-          )}
-        </div>
-
-        <div className="rounded-2xl border border-border bg-card p-5">
-          <div className="mb-3 flex items-center gap-2">
-            <Clock className="size-4 text-lime" />
-            <h3 className="font-display text-lg font-semibold">Próximos</h3>
-          </div>
-          {upcoming.length === 0 ? (
-            <p className="text-sm text-muted-foreground">
-              Nenhum evento próximo. Clique em um dia para criar!
-            </p>
-          ) : (
-            <div className="space-y-2">
-              {upcoming.map((ev) => {
-                const d = new Date(ev.starts_at);
-                return (
+      {!entryAllowed ? (
+        <DailyLimitBlock benefitKey="calendar" />
+      ) : (
+        <>
+          <div className="grid gap-4 lg:grid-cols-[1fr_320px]">
+            <div className="rounded-2xl border border-border bg-card p-4 md:p-5">
+              <div className="mb-4 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <CalendarIcon className="size-4 text-lime" />
+                  <h2 className="font-display text-xl font-semibold capitalize">
+                    {MONTHS[cursor.getMonth()]} {cursor.getFullYear()}
+                  </h2>
+                </div>
+                <div className="flex items-center gap-1">
                   <button
-                    key={ev.id}
-                    onClick={() => openEdit(ev)}
-                    className="lift press w-full rounded-xl border border-border bg-secondary/40 p-3 text-left"
+                    onClick={() =>
+                      setCursor(new Date(cursor.getFullYear(), cursor.getMonth() - 1, 1))
+                    }
+                    className="press flex size-9 items-center justify-center rounded-lg border border-border bg-secondary/40 hover:bg-secondary"
                   >
-                    <div className="flex items-start gap-2">
-                      <div
-                        className="mt-1 size-2 shrink-0 rounded-full"
-                        style={{ background: ev.color }}
-                      />
-                      <div className="min-w-0 flex-1">
-                        <div
-                          className={cn(
-                            "truncate text-sm font-semibold",
-                            ev.completed && "line-through opacity-50",
-                          )}
-                        >
-                          {ev.title}
-                        </div>
-                        <div className="text-[11px] text-muted-foreground">
-                          {d.toLocaleDateString("pt-BR", { day: "2-digit", month: "short" })} ·{" "}
-                          {d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
-                          {ev.subject && ` · ${ev.subject}`}
-                        </div>
-                      </div>
-                    </div>
+                    <ChevronLeft className="size-4" />
                   </button>
-                );
-              })}
-            </div>
-          )}
-        </div>
-      </div>
+                  <button
+                    onClick={() => {
+                      const d = new Date();
+                      d.setDate(1);
+                      setCursor(d);
+                    }}
+                    className="press rounded-lg border border-border bg-secondary/40 px-3 py-1.5 text-xs font-medium hover:bg-secondary"
+                  >
+                    Hoje
+                  </button>
+                  <button
+                    onClick={() =>
+                      setCursor(new Date(cursor.getFullYear(), cursor.getMonth() + 1, 1))
+                    }
+                    className="press flex size-9 items-center justify-center rounded-lg border border-border bg-secondary/40 hover:bg-secondary"
+                  >
+                    <ChevronRight className="size-4" />
+                  </button>
+                </div>
+              </div>
 
-      <AnimatePresence>
-        {modalOpen && (
-          <EventDialog
-            key={editing?.id || "new"}
-            open={modalOpen}
-            onOpenChange={setModalOpen}
-            editing={editing}
-            defaultDate={selectedDate || new Date()}
-            onSave={handleSave}
-            onDelete={handleDelete}
-            onToggleComplete={toggleComplete}
-          />
-        )}
-      </AnimatePresence>
+              <div className="mb-2 grid grid-cols-7 gap-1 text-center text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                {WEEKDAYS.map((d) => (
+                  <div key={d} className="py-1">
+                    {d}
+                  </div>
+                ))}
+              </div>
+
+              <div className="grid grid-cols-7 gap-1">
+                {monthGrid.map(({ date, inMonth }, i) => {
+                  const key = `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
+                  const dayEvents = eventsByDay.get(key) || [];
+                  const isToday = key === todayKey;
+                  return (
+                    <button
+                      key={i}
+                      onClick={() => openCreate(date)}
+                      className={cn(
+                        "press group relative aspect-square min-h-[64px] rounded-lg border border-border/60 p-1.5 text-left transition hover:border-lime/50 hover:bg-secondary/40 sm:aspect-auto sm:min-h-[88px]",
+                        !inMonth && "opacity-40",
+                        isToday && "border-lime bg-lime/5",
+                      )}
+                    >
+                      <div
+                        className={cn(
+                          "mb-1 inline-flex size-6 items-center justify-center rounded-full text-xs font-semibold tabular-nums",
+                          isToday ? "bg-lime text-lime-foreground" : "text-foreground",
+                        )}
+                      >
+                        {date.getDate()}
+                      </div>
+                      <div className="space-y-0.5">
+                        {dayEvents.slice(0, 2).map((ev) => (
+                          <div
+                            key={ev.id}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              openEdit(ev);
+                            }}
+                            className={cn(
+                              "truncate rounded px-1 py-0.5 text-[10px] font-medium",
+                              ev.completed && "opacity-50 line-through",
+                            )}
+                            style={{ backgroundColor: `${ev.color}33`, color: ev.color }}
+                          >
+                            {ev.title}
+                          </div>
+                        ))}
+                        {dayEvents.length > 2 && (
+                          <div className="text-[10px] text-muted-foreground">
+                            +{dayEvents.length - 2} mais
+                          </div>
+                        )}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+              {loading && (
+                <div className="mt-3 text-center text-xs text-muted-foreground">Carregando…</div>
+              )}
+            </div>
+
+            <div className="rounded-2xl border border-border bg-card p-5">
+              <div className="mb-3 flex items-center gap-2">
+                <Clock className="size-4 text-lime" />
+                <h3 className="font-display text-lg font-semibold">Próximos</h3>
+              </div>
+              {upcoming.length === 0 ? (
+                <p className="text-sm text-muted-foreground">
+                  Nenhum evento próximo. Clique em um dia para criar!
+                </p>
+              ) : (
+                <div className="space-y-2">
+                  {upcoming.map((ev) => {
+                    const d = new Date(ev.starts_at);
+                    return (
+                      <button
+                        key={ev.id}
+                        onClick={() => openEdit(ev)}
+                        className="lift press w-full rounded-xl border border-border bg-secondary/40 p-3 text-left"
+                      >
+                        <div className="flex items-start gap-2">
+                          <div
+                            className="mt-1 size-2 shrink-0 rounded-full"
+                            style={{ background: ev.color }}
+                          />
+                          <div className="min-w-0 flex-1">
+                            <div
+                              className={cn(
+                                "truncate text-sm font-semibold",
+                                ev.completed && "line-through opacity-50",
+                              )}
+                            >
+                              {ev.title}
+                            </div>
+                            <div className="text-[11px] text-muted-foreground">
+                              {d.toLocaleDateString("pt-BR", { day: "2-digit", month: "short" })} ·{" "}
+                              {d.toLocaleTimeString("pt-BR", {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              })}
+                              {ev.subject && ` · ${ev.subject}`}
+                            </div>
+                          </div>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </div>
+
+          <AnimatePresence>
+            {modalOpen && (
+              <EventDialog
+                key={editing?.id || "new"}
+                open={modalOpen}
+                onOpenChange={setModalOpen}
+                editing={editing}
+                defaultDate={selectedDate || new Date()}
+                onSave={handleSave}
+                onDelete={handleDelete}
+                onToggleComplete={toggleComplete}
+              />
+            )}
+          </AnimatePresence>
+        </>
+      )}
     </PageContainer>
   );
 }

@@ -9,6 +9,7 @@ import { useAuth } from "@/lib/auth-context";
 import { SUBJECTS } from "@/lib/data";
 import { isDue } from "@/lib/sm2";
 import { cn } from "@/lib/utils";
+import { DailyLimitBanner, DailyLimitBlock, useDailyBenefitAccess } from "@/lib/daily-access";
 
 export const Route = createFileRoute("/flashcards/")({ component: FlashcardsPage });
 
@@ -24,7 +25,8 @@ type CardRow = { id: string; deck_id: string };
 type Review = { flashcard_id: string; next_review_date: string };
 
 function FlashcardsPage() {
-  const { user } = useAuth();
+  const { user, subscription } = useAuth();
+  const flashcardAccess = useDailyBenefitAccess("flashcards", subscription);
   const [decks, setDecks] = useState<Deck[]>([]);
   const [cardCounts, setCardCounts] = useState<Record<string, number>>({});
   const [dueByDeck, setDueByDeck] = useState<Record<string, number>>({});
@@ -84,39 +86,48 @@ function FlashcardsPage() {
           </button>
         }
       />
+      <DailyLimitBanner benefitKey="flashcards" subscription={subscription} />
 
-      <h2 className="mb-3 font-display text-lg font-semibold">Decks disponíveis</h2>
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        {defaults.map((d, i) => (
-          <DeckCard
-            key={d.id}
-            deck={d}
-            count={cardCounts[d.id] || 0}
-            due={dueByDeck[d.id] || 0}
-            index={i}
-          />
-        ))}
-      </div>
-
-      <h2 className="mb-3 mt-8 font-display text-lg font-semibold">Meus decks</h2>
-      {mine.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-border bg-card/50 p-8 text-center text-sm text-muted-foreground">
-          <Sparkles className="mx-auto mb-2 size-5 text-lime" />
-          Crie seu primeiro deck personalizado clicando em "Novo deck".
-        </div>
+      {!flashcardAccess.allowed ? (
+        <DailyLimitBlock benefitKey="flashcards" />
       ) : (
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {mine.map((d, i) => (
-            <DeckCard
-              key={d.id}
-              deck={d}
-              count={cardCounts[d.id] || 0}
-              due={dueByDeck[d.id] || 0}
-              index={i}
-              onDeleted={load}
-            />
-          ))}
-        </div>
+        <>
+          <h2 className="mb-3 font-display text-lg font-semibold">Decks disponíveis</h2>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {defaults.map((d, i) => (
+              <DeckCard
+                key={d.id}
+                deck={d}
+                count={cardCounts[d.id] || 0}
+                due={dueByDeck[d.id] || 0}
+                index={i}
+                onStudy={() => flashcardAccess.consume()}
+              />
+            ))}
+          </div>
+
+          <h2 className="mb-3 mt-8 font-display text-lg font-semibold">Meus decks</h2>
+          {mine.length === 0 ? (
+            <div className="rounded-2xl border border-dashed border-border bg-card/50 p-8 text-center text-sm text-muted-foreground">
+              <Sparkles className="mx-auto mb-2 size-5 text-lime" />
+              Crie seu primeiro deck personalizado clicando em "Novo deck".
+            </div>
+          ) : (
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {mine.map((d, i) => (
+                <DeckCard
+                  key={d.id}
+                  deck={d}
+                  count={cardCounts[d.id] || 0}
+                  due={dueByDeck[d.id] || 0}
+                  index={i}
+                  onDeleted={load}
+                  onStudy={() => flashcardAccess.consume()}
+                />
+              ))}
+            </div>
+          )}
+        </>
       )}
 
       {showCreate && (
@@ -138,12 +149,14 @@ function DeckCard({
   due,
   index,
   onDeleted,
+  onStudy,
 }: {
   deck: Deck;
   count: number;
   due: number;
   index: number;
   onDeleted?: () => void;
+  onStudy?: () => boolean;
 }) {
   async function handleDelete() {
     if (!confirm("Apagar este deck?")) return;
@@ -177,6 +190,9 @@ function DeckCard({
         <Link
           to="/flashcards/$id/estudar"
           params={{ id: deck.id }}
+          onClick={(event) => {
+            if (onStudy && !onStudy()) event.preventDefault();
+          }}
           className="press inline-flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-lime px-3 py-2 text-sm font-bold text-lime-foreground"
         >
           <Play className="size-4" /> Estudar

@@ -6,13 +6,17 @@ import { CONTENTS, SUBJECTS, VESTIBULARES } from "@/lib/data";
 import { useAppStore } from "@/store/app-store";
 import { PageContainer, PageHeader } from "@/components/page";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/lib/auth-context";
+import { DailyLimitBanner, DailyLimitBlock, useDailyBenefitAccess } from "@/lib/daily-access";
 
 export const Route = createFileRoute("/conteudos/")({ component: ConteudosPage });
 
 function ConteudosPage() {
+  const { subscription } = useAuth();
   const [q, setQ] = useState("");
   const [subject, setSubject] = useState<string | null>(null);
   const [vest, setVest] = useState<string | null>(null);
+  const contentAccess = useDailyBenefitAccess("contents", subscription);
   const { bookmarksContent, toggleBookmarkContent, completedContent, toggleCompleteContent } =
     useAppStore();
 
@@ -32,6 +36,7 @@ function ConteudosPage() {
         title="Biblioteca de estudos"
         description="Conteúdo curado por vestibular e por matéria. Tudo em um só lugar."
       />
+      <DailyLimitBanner benefitKey="contents" subscription={subscription} />
 
       <div className="glass mb-4 flex flex-col gap-3 rounded-2xl p-4">
         <div className="flex items-center gap-2 rounded-xl border border-border bg-background/50 px-3">
@@ -47,7 +52,9 @@ function ConteudosPage() {
         <FilterRow label="Vestibular" options={[...VESTIBULARES]} value={vest} onChange={setVest} />
       </div>
 
-      {items.length === 0 ? (
+      {!contentAccess.allowed ? (
+        <DailyLimitBlock benefitKey="contents" />
+      ) : items.length === 0 ? (
         <Empty />
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

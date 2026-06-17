@@ -1,17 +1,43 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import { ArrowLeft, ArrowRight, Bookmark, Check } from "lucide-react";
 import { CONTENTS } from "@/lib/data";
 import { useAppStore } from "@/store/app-store";
 import { PageContainer } from "@/components/page";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/lib/auth-context";
+import { DailyLimitBlock, useDailyBenefitAccess } from "@/lib/daily-access";
 
 export const Route = createFileRoute("/conteudos/$id")({ component: ContentDetail });
 
 function ContentDetail() {
   const { id } = Route.useParams();
+  const { subscription } = useAuth();
+  const contentAccess = useDailyBenefitAccess("contents", subscription);
+  const { consume: consumeContentAccess } = contentAccess;
+  const [entryAllowed, setEntryAllowed] = useState(contentAccess.allowed);
   const { bookmarksContent, toggleBookmarkContent, completedContent, toggleCompleteContent } =
     useAppStore();
   const content = CONTENTS.find((c) => c.id === id);
+
+  useEffect(() => {
+    setEntryAllowed(consumeContentAccess());
+  }, [consumeContentAccess, id]);
+
+  if (!entryAllowed) {
+    return (
+      <PageContainer className="max-w-4xl">
+        <Link
+          to="/conteudos"
+          className="mb-6 inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
+        >
+          <ArrowLeft className="size-4" /> Conteudos
+        </Link>
+        <DailyLimitBlock benefitKey="contents" />
+      </PageContainer>
+    );
+  }
+
   if (!content) {
     return (
       <PageContainer>

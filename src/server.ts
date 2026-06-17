@@ -4,6 +4,7 @@ import { consumeLastCapturedError } from "./lib/error-capture";
 import { renderErrorPage } from "./lib/error-page";
 import { handleLofyPayRequest } from "./server/lofypay";
 import { handleMonitoringRequest } from "./server/monitoring";
+import { handleModerationRequest } from "./server/moderation";
 
 type ServerEntry = {
   fetch: (request: Request, env: unknown, ctx: unknown) => Promise<Response> | Response;
@@ -99,6 +100,9 @@ export default {
       }
       if (url.pathname === "/api/monitor") {
         return withSecurityHeaders(request, await handleMonitoringRequest(request));
+      }
+      if (url.pathname === "/api/moderation/check") {
+        return withSecurityHeaders(request, await handleModerationRequest(request));
       }
 
       const handler = await getServerEntry();

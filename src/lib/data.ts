@@ -50,7 +50,7 @@ export type Content = {
   body: string;
 };
 
-export const CONTENTS: Content[] = [
+const BASE_CONTENTS: Content[] = [
   {
     id: "funcoes-2grau",
     title: "Funções do 2º grau — Tudo que você precisa saber para o ENEM",
@@ -587,6 +587,279 @@ Apresente a referência, explique a ideia relevante e conecte-a diretamente à t
 Citações soltas, dados sem fonte, referências inventadas e exemplos que substituem a análise.`,
   },
 ];
+
+const SUBJECT_GUIDES: Record<
+  (typeof SUBJECTS)[number],
+  { topic: string; focus: string; checklist: string[] }
+> = {
+  Matemática: {
+    topic: "modelagem, funções, geometria e estatística",
+    focus:
+      "traduzir o enunciado para equações, gráficos, proporções ou contagens antes de calcular",
+    checklist: [
+      "identifique grandezas e unidades",
+      "monte a relação algébrica",
+      "teste a coerência do resultado",
+    ],
+  },
+  Português: {
+    topic: "interpretação, gramática, literatura e efeitos de sentido",
+    focus: "separar informação explícita, inferência autorizada pelo texto e extrapolação indevida",
+    checklist: [
+      "leia o comando antes do texto",
+      "marque tese e conectivos",
+      "volte ao trecho que sustenta a alternativa",
+    ],
+  },
+  Redação: {
+    topic: "projeto de texto, repertório, argumentação e proposta",
+    focus: "transformar repertório em argumento produtivo, conectado à tese e ao recorte temático",
+    checklist: [
+      "defina tese em uma frase",
+      "planeje dois argumentos",
+      "detalhe agente, ação, meio e finalidade",
+    ],
+  },
+  História: {
+    topic: "processos históricos do Brasil e do mundo contemporâneo",
+    focus: "entender causalidade, permanências, rupturas e disputas de narrativa",
+    checklist: [
+      "localize tempo e espaço",
+      "relacione grupos sociais",
+      "distinga causa imediata de causa estrutural",
+    ],
+  },
+  Geografia: {
+    topic: "espaço geográfico, economia, clima, cartografia e urbanização",
+    focus: "conectar mapas, dados e conceitos a processos sociais e ambientais",
+    checklist: [
+      "observe escala e legenda",
+      "relacione natureza e sociedade",
+      "compare indicadores regionais",
+    ],
+  },
+  Física: {
+    topic: "mecânica, energia, ondas, eletricidade, óptica e termologia",
+    focus: "escolher a lei física adequada e acompanhar unidades do início ao fim",
+    checklist: [
+      "desenhe o sistema",
+      "liste forças ou grandezas",
+      "confira unidade e ordem de grandeza",
+    ],
+  },
+  Química: {
+    topic: "estequiometria, soluções, equilíbrio, orgânica e eletroquímica",
+    focus: "ligar representação microscópica, equações químicas e fenômenos observáveis",
+    checklist: [
+      "balanceie a reação",
+      "converta mol, massa e concentração",
+      "analise excesso e reagente limitante",
+    ],
+  },
+  Biologia: {
+    topic: "citologia, genética, ecologia, evolução e fisiologia",
+    focus: "relacionar estrutura, função e consequência biológica",
+    checklist: [
+      "identifique o nível de organização",
+      "compare processos",
+      "conecte adaptação e ambiente",
+    ],
+  },
+  Inglês: {
+    topic: "leitura instrumental, vocabulário contextual e inferência",
+    focus: "compreender intenção, tom e relação lógica sem traduzir palavra por palavra",
+    checklist: [
+      "busque cognatos com cuidado",
+      "marque conectivos",
+      "inferira vocabulário pelo contexto",
+    ],
+  },
+  Filosofia: {
+    topic: "ética, política, conhecimento, modernidade e existência",
+    focus: "identificar o problema filosófico e a resposta proposta por cada autor",
+    checklist: [
+      "nomeie o conceito central",
+      "relacione autor e contexto",
+      "aplique a ideia ao enunciado",
+    ],
+  },
+  Sociologia: {
+    topic: "cultura, trabalho, desigualdade, Estado e movimentos sociais",
+    focus: "usar conceitos sociológicos para explicar práticas e instituições",
+    checklist: [
+      "identifique ator social",
+      "relacione indivíduo e estrutura",
+      "evite senso comum como resposta final",
+    ],
+  },
+};
+
+const VESTIBULAR_GUIDES: Record<
+  (typeof VESTIBULARES)[number],
+  { profile: string; strategy: string; difficulty: Difficulty }
+> = {
+  ENEM: {
+    profile: "cobra leitura aplicada, competências, dados, cidadania e problemas do cotidiano",
+    strategy:
+      "priorize interpretação do comando, eliminação de alternativas e conexão com situações reais",
+    difficulty: "Médio",
+  },
+  FUVEST: {
+    profile: "valoriza profundidade conceitual, repertório cultural e enunciados densos",
+    strategy: "explique o raciocínio por etapas e sustente cada escolha com conceito preciso",
+    difficulty: "Difícil",
+  },
+  UNICAMP: {
+    profile: "mistura interdisciplinaridade, leitura crítica e aplicação contextual",
+    strategy: "observe gênero textual, gráfico ou experimento e responda ao recorte exato pedido",
+    difficulty: "Difícil",
+  },
+  UNESP: {
+    profile: "combina base conceitual sólida com interpretação direta de textos, imagens e tabelas",
+    strategy: "revise fundamentos e treine reconhecimento rápido do conceito central",
+    difficulty: "Médio",
+  },
+  ITA: {
+    profile: "exige domínio matemático alto, formalização e resistência a problemas longos",
+    strategy: "organize hipóteses, deduza fórmulas e só depois substitua valores",
+    difficulty: "Difícil",
+  },
+  IME: {
+    profile: "cobra rigor, cálculo extenso e domínio de fundamentos em nível avançado",
+    strategy: "faça demonstrações curtas, acompanhe unidades e revise álgebra com atenção",
+    difficulty: "Difícil",
+  },
+  AFA: {
+    profile: "favorece objetividade, rapidez, fundamentos e precisão em ciências exatas",
+    strategy: "treine resolução cronometrada e evite atalhos sem checar condições",
+    difficulty: "Médio",
+  },
+  EsPCEx: {
+    profile: "equilibra conteúdo tradicional, interpretação e treino de prova militar",
+    strategy: "memorize fórmulas essenciais, mas pratique aplicação em problemas variados",
+    difficulty: "Médio",
+  },
+  UERJ: {
+    profile: "trabalha competências por área, leitura crítica e temas sociais recorrentes",
+    strategy: "ligue conceitos a evidências do texto-base e a indicadores brasileiros",
+    difficulty: "Médio",
+  },
+  UFPR: {
+    profile: "cobra repertório amplo, atenção a comandos e boa leitura de alternativas",
+    strategy: "faça revisão por tópicos e registre erros recorrentes por assunto",
+    difficulty: "Médio",
+  },
+  UFRGS: {
+    profile: "tem tradição conteudista, contextualização regional e cobrança conceitual direta",
+    strategy: "combine resumos densos com listas de questões por assunto",
+    difficulty: "Médio",
+  },
+  UnB: {
+    profile: "usa itens de julgamento e demanda leitura fina de afirmações",
+    strategy: "procure quantificadores, exceções e relações de causa e consequência",
+    difficulty: "Médio",
+  },
+  "PUC-SP": {
+    profile: "valoriza interpretação, atualidades e domínio dos fundamentos escolares",
+    strategy: "treine leitura de textos e revise conceitos de maior incidência",
+    difficulty: "Médio",
+  },
+  "PUC-Rio": {
+    profile: "combina interpretação, interdisciplinaridade e situações contemporâneas",
+    strategy: "relacione teoria, exemplos atuais e leitura de gráficos ou textos",
+    difficulty: "Médio",
+  },
+  Mackenzie: {
+    profile: "cobra objetividade, base conceitual e velocidade de execução",
+    strategy: "faça listas curtas com correção imediata e revise fórmulas e definições",
+    difficulty: "Médio",
+  },
+  "Albert Einstein": {
+    profile: "exige raciocínio aplicado, leitura científica e problemas contextualizados",
+    strategy: "interprete dados, hipóteses e evidências antes de marcar a resposta",
+    difficulty: "Difícil",
+  },
+  UNIFESP: {
+    profile: "aproxima ciências, saúde, leitura crítica e aprofundamento conceitual",
+    strategy: "treine explicações causais e análise de experimentos, tabelas e gráficos",
+    difficulty: "Difícil",
+  },
+  FAMERP: {
+    profile: "tem forte presença de biologia, química, interpretação e contexto de saúde",
+    strategy: "relacione conceitos a fisiologia, ambiente, tecnologia e políticas públicas",
+    difficulty: "Médio",
+  },
+  FAMEMA: {
+    profile: "trabalha raciocínio aplicado, ciências da natureza e leitura contextual",
+    strategy: "resolva por evidências do enunciado e revise temas ligados a saúde",
+    difficulty: "Médio",
+  },
+  Outro: {
+    profile: "pode variar bastante, então a melhor base é domínio conceitual e treino amplo",
+    strategy: "monte ciclos de revisão, questões e correção ativa por dificuldade",
+    difficulty: "Fácil",
+  },
+};
+
+function slugify(value: string) {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
+}
+
+function buildContent(
+  subject: (typeof SUBJECTS)[number],
+  vestibular: (typeof VESTIBULARES)[number],
+): Content {
+  const subjectGuide = SUBJECT_GUIDES[subject];
+  const examGuide = VESTIBULAR_GUIDES[vestibular];
+  return {
+    id: `${slugify(subject)}-${slugify(vestibular)}-guia-completo`,
+    title: `${subject} para ${vestibular}: guia completo de revisão`,
+    subject,
+    vestibular,
+    difficulty: examGuide.difficulty,
+    readingTime:
+      examGuide.difficulty === "Difícil" ? 18 : examGuide.difficulty === "Médio" ? 14 : 10,
+    excerpt: `Roteiro extenso de ${subject.toLowerCase()} focado no perfil do ${vestibular}, com teoria, estratégia e checklist de prova.`,
+    body: `# ${subject} para ${vestibular}
+
+Este guia organiza ${subjectGuide.topic} para o perfil do ${vestibular}. A banca ${examGuide.profile}. Por isso, o estudo precisa combinar teoria, leitura do comando e treino ativo com correção.
+
+## O que dominar
+O ponto central é ${subjectGuide.focus}. Antes de resolver questões, monte um mapa do assunto: conceitos essenciais, fórmulas ou autores, exemplos clássicos e erros frequentes. Esse mapa evita estudo solto e ajuda a reconhecer padrões de prova.
+
+## Como a banca costuma cobrar
+No ${vestibular}, a melhor estratégia é ${examGuide.strategy}. Em questões contextualizadas, não pule o texto-base: nele normalmente aparecem restrições, dados e pistas que definem a alternativa correta. Em questões diretas, busque a palavra-chave do comando e responda exatamente ao que foi pedido.
+
+## Roteiro de estudo
+- Faça uma leitura teórica curta e anote definições em linguagem própria.
+- Resolva questões fáceis para confirmar fundamentos.
+- Passe para questões médias e difíceis, registrando o motivo de cada erro.
+- Revise os erros em 24 horas e novamente no fim da semana.
+- Transforme fórmulas, datas, conceitos e exceções em flashcards.
+
+## Checklist de prova
+- ${subjectGuide.checklist[0]}.
+- ${subjectGuide.checklist[1]}.
+- ${subjectGuide.checklist[2]}.
+
+## Exemplo de aplicação
+Ao encontrar uma questão de ${subject.toLowerCase()}, leia primeiro o comando e grife o verbo principal: comparar, explicar, calcular, inferir ou justificar. Depois localize dados, conceitos e alternativas incompatíveis. Mesmo quando você não souber tudo, eliminar respostas que contradizem o enunciado aumenta muito a chance de acerto.
+
+## Revisão final
+Na semana da prova, priorize recorrência e erro pessoal. Refaça questões marcadas, revise resumos de uma página e treine sob tempo. O objetivo não é reler tudo, mas chegar ao dia do ${vestibular} com procedimentos claros para reconhecer o tema, escolher o método e conferir a resposta.`,
+  };
+}
+
+const generatedContents = SUBJECTS.flatMap((subject) =>
+  VESTIBULARES.map((vestibular) => buildContent(subject, vestibular)),
+).filter((generated) => !BASE_CONTENTS.some((content) => content.id === generated.id));
+
+export const CONTENTS: Content[] = [...BASE_CONTENTS, ...generatedContents];
 
 // Repertório
 export type Repertoire = {

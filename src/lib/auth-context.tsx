@@ -40,11 +40,15 @@ function getErrorMessage(error: unknown, fallback: string) {
 function getMetadataName(user: User) {
   const metadata = user.user_metadata ?? {};
   const candidates = [metadata.name, metadata.full_name, metadata.display_name];
-  const name = candidates.find((value): value is string => typeof value === "string" && !!value.trim());
+  const name = candidates.find(
+    (value): value is string => typeof value === "string" && !!value.trim(),
+  );
   return name?.trim() || user.email?.split("@")[0] || "Estudante";
 }
 
-function syncLocalProfile(profile: Pick<Profile, "display_name" | "avatar" | "vestibular" | "target_score">) {
+function syncLocalProfile(
+  profile: Pick<Profile, "display_name" | "avatar" | "vestibular" | "target_score">,
+) {
   useAppStore.getState().setUser({
     name: profile.display_name || "Estudante",
     avatar: profile.avatar || "target",

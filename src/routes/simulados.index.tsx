@@ -6,6 +6,7 @@ import { PageContainer, PageHeader } from "@/components/page";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { cn } from "@/lib/utils";
+import { DailyLimitBanner, DailyLimitBlock, useDailyBenefitAccess } from "@/lib/daily-access";
 
 export const Route = createFileRoute("/simulados/")({ component: SimuladosPage });
 
@@ -32,7 +33,8 @@ type Result = {
 const FILTERS = ["Todos", "ENEM", "FUVEST", "UNICAMP", "UNESP", "Vunesp", "Mackenzie"];
 
 function SimuladosPage() {
-  const { user } = useAuth();
+  const { user, subscription } = useAuth();
+  const simuladoAccess = useDailyBenefitAccess("simulados", subscription);
   const [filter, setFilter] = useState("Todos");
   const [simulados, setSimulados] = useState<Simulado[]>([]);
   const [results, setResults] = useState<Result[]>([]);
@@ -74,6 +76,7 @@ function SimuladosPage() {
         title="Teste seu preparo"
         description="Provas no estilo real para você cronometrar e medir sua evolução."
       />
+      <DailyLimitBanner benefitKey="simulados" subscription={subscription} />
 
       <div className="mb-6 flex flex-wrap gap-2">
         {FILTERS.map((f) => (
@@ -92,48 +95,55 @@ function SimuladosPage() {
         ))}
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {filtered.map((s, i) => (
-          <motion.div
-            key={s.id}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.04 }}
-            className="lift rounded-2xl border border-border bg-card p-5"
-          >
-            <div className="mb-3 flex items-center justify-between">
-              <span className="rounded-full bg-lime/10 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-lime">
-                {s.vestibular}
-              </span>
-              <span className="text-[10px] uppercase tracking-wider text-muted-foreground">
-                {s.difficulty}
-              </span>
-            </div>
-            <h3 className="font-display text-lg font-semibold leading-snug">{s.title}</h3>
-            <div className="mt-3 flex items-center gap-4 text-xs text-muted-foreground">
-              <span className="inline-flex items-center gap-1">
-                <Target className="size-3.5" /> {s.total_questions} questões
-              </span>
-              <span className="inline-flex items-center gap-1">
-                <Clock className="size-3.5" /> {s.time_limit_minutes} min
-              </span>
-            </div>
-            {avgByExam[s.id] !== undefined && (
-              <div className="mt-2 text-[11px] text-muted-foreground">
-                Média da galera:{" "}
-                <span className="font-semibold text-foreground">{avgByExam[s.id]}%</span>
-              </div>
-            )}
-            <Link
-              to="/simulados/$id"
-              params={{ id: s.id }}
-              className="press mt-4 inline-flex w-full items-center justify-center gap-1.5 rounded-xl bg-lime px-4 py-2 text-sm font-bold text-lime-foreground"
+      {!simuladoAccess.allowed ? (
+        <DailyLimitBlock benefitKey="simulados" />
+      ) : (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {filtered.map((s, i) => (
+            <motion.div
+              key={s.id}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.04 }}
+              className="lift rounded-2xl border border-border bg-card p-5"
             >
-              <Play className="size-4" /> Iniciar simulado
-            </Link>
-          </motion.div>
-        ))}
-      </div>
+              <div className="mb-3 flex items-center justify-between">
+                <span className="rounded-full bg-lime/10 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-lime">
+                  {s.vestibular}
+                </span>
+                <span className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                  {s.difficulty}
+                </span>
+              </div>
+              <h3 className="font-display text-lg font-semibold leading-snug">{s.title}</h3>
+              <div className="mt-3 flex items-center gap-4 text-xs text-muted-foreground">
+                <span className="inline-flex items-center gap-1">
+                  <Target className="size-3.5" /> {s.total_questions} questões
+                </span>
+                <span className="inline-flex items-center gap-1">
+                  <Clock className="size-3.5" /> {s.time_limit_minutes} min
+                </span>
+              </div>
+              {avgByExam[s.id] !== undefined && (
+                <div className="mt-2 text-[11px] text-muted-foreground">
+                  Média da galera:{" "}
+                  <span className="font-semibold text-foreground">{avgByExam[s.id]}%</span>
+                </div>
+              )}
+              <Link
+                to="/simulados/$id"
+                params={{ id: s.id }}
+                onClick={(event) => {
+                  if (!simuladoAccess.consume()) event.preventDefault();
+                }}
+                className="press mt-4 inline-flex w-full items-center justify-center gap-1.5 rounded-xl bg-lime px-4 py-2 text-sm font-bold text-lime-foreground"
+              >
+                <Play className="size-4" /> Iniciar simulado
+              </Link>
+            </motion.div>
+          ))}
+        </div>
+      )}
 
       <div className="mt-10">
         <h2 className="mb-3 flex items-center gap-2 font-display text-xl font-semibold">

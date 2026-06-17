@@ -20,6 +20,7 @@ import type { Subscription } from "@/lib/subscription";
 import { toast } from "sonner";
 import { PageContainer, PageHeader } from "@/components/page";
 import { UserAvatar } from "@/components/user-avatar";
+import { DailyLimitBanner, DailyLimitBlock, useDailyBenefitAccess } from "@/lib/daily-access";
 
 function Page({
   title,
@@ -123,7 +124,14 @@ type GEvent = {
 };
 
 function GruposPage() {
-  const { user, profile, loading } = useAuth();
+  const { user, profile, subscription, loading } = useAuth();
+  const groupAccess = useDailyBenefitAccess("groups", subscription);
+  const { consume: consumeGroupAccess } = groupAccess;
+  const [entryAllowed, setEntryAllowed] = useState(groupAccess.allowed);
+
+  useEffect(() => {
+    if (!loading) setEntryAllowed(consumeGroupAccess());
+  }, [consumeGroupAccess, loading]);
 
   if (loading) {
     return (
@@ -135,7 +143,22 @@ function GruposPage() {
     );
   }
 
-  return <GroupsApp user={user} profile={profile} />;
+  if (!entryAllowed) {
+    return (
+      <Page title="Grupos de Estudo" subtitle="Estude com sua galera">
+        <DailyLimitBanner benefitKey="groups" subscription={subscription} />
+        <DailyLimitBlock benefitKey="groups" />
+      </Page>
+    );
+  }
+
+  return (
+    <GroupsApp
+      user={user}
+      profile={profile}
+      dailyBanner={<DailyLimitBanner benefitKey="groups" subscription={subscription} />}
+    />
+  );
 }
 
 /* ---------------- GROUPS APP (unlocked path) ---------------- */
@@ -143,9 +166,11 @@ function GruposPage() {
 function GroupsApp({
   user,
   profile,
+  dailyBanner,
 }: {
   user: { id: string } | null;
   profile: { display_name: string; avatar: string } | null;
+  dailyBanner?: React.ReactNode;
 }) {
   const [groups, setGroups] = useState<Group[]>([]);
   const [myMemberships, setMyMemberships] = useState<Set<string>>(new Set());
@@ -264,6 +289,7 @@ function GroupsApp({
         </Button>
       }
     >
+      {dailyBanner}
       {joiningInvite && (
         <div className="mb-6 rounded-xl border border-lime/30 bg-lime/10 px-4 py-3 text-sm">
           Entrando no grupo pelo convite...

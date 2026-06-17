@@ -37,6 +37,8 @@ import {
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { assertAiModerationAllowed } from "@/lib/ai-moderation";
+import { assertSafeCommunityText } from "@/lib/content-safety";
 import {
   COMMUNITY_FILES_BUCKET,
   safeUploadFileName,
