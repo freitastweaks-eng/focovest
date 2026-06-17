@@ -462,6 +462,12 @@ function CreatePostDialog({
     if (!title.trim() || !content.trim()) return toast.error("Preencha título e conteúdo");
     setSubmitting(true);
     try {
+      assertSafeCommunityText(title, content);
+      await assertAiModerationAllowed({
+        text: `${title.trim()}\n\n${content.trim()}`,
+        file,
+      });
+
       let attachment_url: string | null = null;
       let attachment_type: string | null = null;
       let attachment_name: string | null = null;
@@ -671,15 +677,21 @@ function PostDialog({
 
   const submit = async () => {
     if (!post || !currentUserId || !text.trim()) return;
-    const { error } = await supabase.from("community_comments").insert({
-      post_id: post.id,
-      user_id: currentUserId,
-      author_name: authorName,
-      author_avatar: authorAvatar,
-      content: text.trim(),
-    });
-    if (error) return toast.error("Erro ao comentar");
-    setText("");
+    try {
+      assertSafeCommunityText(text);
+      await assertAiModerationAllowed({ text: text.trim() });
+      const { error } = await supabase.from("community_comments").insert({
+        post_id: post.id,
+        user_id: currentUserId,
+        author_name: authorName,
+        author_avatar: authorAvatar,
+        content: text.trim(),
+      });
+      if (error) return toast.error("Erro ao comentar");
+      setText("");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Erro ao comentar");
+    }
   };
 
   const removeComment = async (id: string) => {
