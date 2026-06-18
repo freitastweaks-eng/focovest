@@ -15,10 +15,13 @@ type ModerationResult = {
   category_scores?: Record<string, number>;
 };
 
-function jsonResponse(payload: unknown, status = 200) {
+function jsonResponse(payload: unknown, status = 200, headers?: HeadersInit) {
   return new Response(JSON.stringify(payload), {
     status,
-    headers: { "content-type": "application/json; charset=utf-8" },
+    headers: {
+      "content-type": "application/json; charset=utf-8",
+      ...Object.fromEntries(new Headers(headers)),
+    },
   });
 }
 
@@ -122,6 +125,29 @@ export async function handleModerationRequest(request: Request) {
   });
 
   if (!response.ok) {
+    console.error("OpenAI moderation request failed:", {
+      status: response.status,
+      requestId: response.headers.get("x-request-id"),
+    });
+
+    if (response.status === 429) {
+      return jsonResponse(
+        {
+          status: "error",
+          message: "A moderacao atingiu o limite temporario. Tente novamente em instantes.",
+        },
+        429,
+        { "Retry-After": response.headers.get("retry-after") ?? "30" },
+      );
+    }
+
+    if (response.status === 401 || response.status === 403) {
+      return jsonResponse(
+        { status: "error", message: "Moderacao com IA temporariamente indisponivel." },
+        503,
+      );
+    }
+
     return jsonResponse({ status: "error", message: "Nao foi possivel moderar o conteudo." }, 502);
   }
 
